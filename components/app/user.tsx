@@ -4,20 +4,21 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "../ui/hover-card"
 import api from "@/lib/api";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
+import type { UserType } from "@/lib/schemas";
 
 export default function User() {
-    const [user,setUser] = useState(null);
-    useEffect(() => {
-        const fetchUser = async () => {
-            try{
-                const response = await api.get("/auth/users/me/");
-                setUser(response.data);
-            }catch(error){
-                console.log(error);
-            }
-        }
-        fetchUser();
-    }, []);
+    const [user,setUser] = useState<UserType | null>(null);
+    // useEffect(() => {
+    //     const fetchUser = async () => {
+    //         try{
+    //             const response = await api.get("/auth/users/me/");
+    //             setUser(response.data);
+    //         }catch(error){
+    //             console.log(error);
+    //         }
+    //     }
+    //     fetchUser();
+    // }, []);
     const handleLogout = async() => {
         try{
             await api.post('/auth/token/logout/');

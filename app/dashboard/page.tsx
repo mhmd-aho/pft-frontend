@@ -1,40 +1,18 @@
-"use client"
 import ThemeToggle from "@/components/app/theme-toggle";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus } from "lucide-react";
+import Incoms from "@/components/app/incoms";
+import Expenses from "@/components/app/expenses";
 import User from "@/components/app/user";   
-import { ChartPieDonutText } from "@/components/app/pie-chart";
-import { useEffect, useState } from "react";
-import api from "@/lib/api";
-import type { ProfileType, UserType } from "@/lib/schemas";
+import Savings from "@/components/app/savings";
 import Transactions from "@/components/app/transactions";
-export default function Dashboard() {
-    const [profile,setProfile] = useState<ProfileType | null>(null);
-    const [user,setUser] = useState<UserType | null>(null);
-    // useEffect(()=>{
-    //     const fetchUser = async () => {
-    //         try{
-    //             const response = await api.get("/auth/users/me/");
-    //             setUser(response.data);
-    //         }catch(error){
-    //             console.log(error);
-    //         }
-    //     }
-    //     fetchUser();
-
-    //     const fetchProfile = async(username: string) => {
-    //         try{
-    //             const response = await api.get(`/api/profiles/${username}/`);
-    //             setProfile(response.data);
-    //         }catch(error){
-    //             console.log(error);
-    //         }
-    //     }
-    //     if(user && !profile){
-    //         fetchProfile(user.username);
-    //     }
-    // },[user,profile]);
+import Balance from "@/components/app/balance";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+export default async function Dashboard() {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token");
+    if(!token){
+        redirect("/auth/signin");
+    }
     return (
         <section className="w-screen h-screen flex flex-col">
             <div className="w-full h-12 px-4 flex items-center justify-between">
@@ -45,39 +23,11 @@ export default function Dashboard() {
                </div>
             </div>
             <div className="w-full flex-1 grid grid-cols-6 grid-rows-5 gap-3 p-4">
-                <Card className="col-start-1 col-span-2 row-start-1">
-                    <CardHeader>
-                        <CardTitle className="text-3xl">Balance</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <h1 className="text-xl">$0.00</h1>
-                    </CardContent>
-                </Card>
-                <Card className="col-start-3 col-span-2 row-start-1">
-                    <CardHeader>
-                        <CardTitle className="text-3xl">Incomes</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <h1 className="text-xl">$0.00</h1>
-                    </CardContent>
-                </Card>
-                <Card className="col-start-5 col-span-2 row-start-1">
-                    <CardHeader>
-                        <CardTitle className="text-3xl">Expenses</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <h1 className="text-xl">$0.00</h1>
-                    </CardContent>
-                </Card>
-                <Card className="col-start-1 col-end-4 row-start-2 row-end-6">
-                    <CardHeader>
-                        <CardTitle className="text-3xl">Savings</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <ChartPieDonutText profile={profile} />
-                    </CardContent>
-                </Card>
-                <Transactions profile={profile} />
+                <Balance/>
+                <Incoms />
+                <Expenses />
+                <Savings />
+                <Transactions />
             </div>
         </section>
     );

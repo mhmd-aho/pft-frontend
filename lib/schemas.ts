@@ -9,4 +9,22 @@
         user_id?: number;
         balance: number;
     }
-    export type { UserType, ProfileType };
+    type TransactionPostType = {
+        profile_id: number;
+        amount: number;
+        type: string;
+        category_id: number;
+    }
+    type CategoryType = {
+        id: number;
+        name: string;
+    }
+    type TransactionType = {
+        id: number;
+        profile: ProfileType;
+        amount: number;
+        type: string;
+        category: CategoryType;
+        created_at: Date;
+    }
+    export type { UserType, ProfileType, TransactionType, TransactionPostType, CategoryType };

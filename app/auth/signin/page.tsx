@@ -8,15 +8,23 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
+import { setCookie } from "cookies-next";
+import { useProfile } from "@/context/Profile";
 export default function SignIn() {
     const router = useRouter();
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const {refreshProfile} = useProfile();
     const handleSignIn = async () => {
         try{
             const response = await api.post("/auth/token/login/", {username: username, password: password});
-            localStorage.setItem("token", response.data.auth_token);
+            const token = response.data.auth_token;
+            setCookie("token", token, {
+                maxAge: 60 * 60 * 24 * 7,
+                path: "/",
+            });
             toast.success("Signed in successfully");
+            await refreshProfile();
             router.push("/dashboard");
         }catch(error){
             console.log(error);

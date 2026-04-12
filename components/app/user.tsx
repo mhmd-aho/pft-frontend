@@ -1,38 +1,37 @@
 'use client'
-import { useEffect, useState } from "react";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "../ui/hover-card";
-import api from "@/lib/api";
 import { Button } from "../ui/button";
+import { useProfile } from "@/context/Profile";
+import { Skeleton } from "../ui/skeleton";
+import api from "@/lib/api";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import type { UserType } from "@/lib/schemas";
 
 export default function User() {
-    const [user,setUser] = useState<UserType | null>(null);
-    // useEffect(() => {
-    //     const fetchUser = async () => {
-    //         try{
-    //             const response = await api.get("/auth/users/me/");
-    //             setUser(response.data);
-    //         }catch(error){
-    //             console.log(error);
-    //         }
-    //     }
-    //     fetchUser();
-    // }, []);
-    const handleLogout = async() => {
+    const router = useRouter();
+    const {profile,loading,logout} = useProfile();
+    if(loading){
+        return(
+            <Skeleton className="w-32 h-5" />
+        )
+    }
+    if(!profile){
+        return null;
+    }
+    const handleLogout = async () => {
         try{
             await api.post('/auth/token/logout/');
-            localStorage.removeItem("token");
-            toast.success("Logged out successfully");
-        }catch(error){
-            console.log(error);
+            logout();
+            toast.success('Logged out successfully');
+            router.push('/auth/signin');
+        }catch{
             toast.error('Failed to logout');
         }
     }
     return (
         <HoverCard>
             <HoverCardTrigger>
-                <p>{user?.username}</p>
+                <p>{profile.user.username}</p>
             </HoverCardTrigger>
             <HoverCardContent>
                 <Button onClick={handleLogout}>Logout</Button>

@@ -1,8 +1,11 @@
 "use client"
 
-import * as React from "react"
 import { TrendingUp } from "lucide-react"
 import { Label, Pie, PieChart } from "recharts"
+import { useProfile } from "@/context/Profile";
+import { useMemo, useState, useEffect } from "react";
+import { getUserTransactionsByType } from "@/app/actions";
+import type { TransactionType } from "@/lib/schemas";
 
 import {
   Card,
@@ -19,26 +22,47 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart"
 
+
 export const description = "A donut chart with text"
 
-const chartData = [
-  { browser: "chrome", visitors: 275, fill: "var(--color-chrome)" },
-  { browser: "safari", visitors: 200, fill: "var(--color-safari)" },
-]
+
 
 const chartConfig = {
   Expenses: {
     label: "Expenses",
-    color: "var(--chart-1)",
   },
   Savings: {
     label: "Savings",
-    color: "var(--chart-2)",
   },
 } satisfies ChartConfig
 
-export function ChartPieDonutText({profile}: {profile: any}) {
-  const balance = profile?.balance;
+export function ChartPieDonutText() {
+  const {profile} = useProfile();
+  const [transactions,setTransactions] = useState<TransactionType[]>([]);
+  const totalExpenses = useMemo(() => {
+    return transactions.reduce((acc,transaction) => acc + Number(transaction.amount),0);
+  },[transactions]);
+  useEffect(() => {
+    if(profile){
+      const fetchTransactions = async () => {
+        const response = await getUserTransactionsByType(profile.id,"expense");
+        if(response.success){
+          setTransactions(response.data);
+        }
+      }
+      fetchTransactions();
+    }
+  },[profile]);
+  if(!profile){
+    return <div>Loading...</div>
+  }
+  const balance = Number(profile.balance) + Number(totalExpenses);
+  const savings = balance - Number(totalExpenses);
+  const savingsPercentage = (Number(savings) / Number(balance)) * 100;
+  const chartData = [
+  {label:"Expenses",value:Number(totalExpenses),fill:"var(--chart-1)"},
+  {label:"Savings",value:Number(savings),fill:"var(--chart-5)"}
+]
   return (
     <Card className="flex flex-col">
       <CardHeader className="items-center pb-0">
@@ -57,10 +81,12 @@ export function ChartPieDonutText({profile}: {profile: any}) {
             />
             <Pie
               data={chartData}
-              dataKey="visitors"
-              nameKey="browser"
+              dataKey="value"
+              nameKey="label"
               innerRadius={60}
               strokeWidth={5}
+              startAngle={90}
+              endAngle={450}
             >
               <Label
                 content={({ viewBox }) => {
@@ -84,7 +110,7 @@ export function ChartPieDonutText({profile}: {profile: any}) {
                           y={(viewBox.cy || 0) + 24}
                           className="fill-muted-foreground"
                         >
-                          Balance
+                          Total income
                         </tspan>
                       </text>
                     )
@@ -97,10 +123,10 @@ export function ChartPieDonutText({profile}: {profile: any}) {
       </CardContent>
       <CardFooter className="flex-col gap-2 text-sm">
         <div className="flex items-center gap-2 leading-none font-medium">
-          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
+          You are saving  {savingsPercentage.toFixed(2)}% from your income <TrendingUp className="h-4 w-4" />
         </div>
         <div className="leading-none text-muted-foreground">
-          Showing total visitors for the last 6 months
+          Showing total income for the last month
         </div>
       </CardFooter>
     </Card>

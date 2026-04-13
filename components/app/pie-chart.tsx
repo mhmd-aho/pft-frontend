@@ -58,7 +58,11 @@ export function ChartPieDonutText() {
   }
   const balance = Number(profile.balance) + Number(totalExpenses);
   const savings = balance - Number(totalExpenses);
-  const savingsPercentage = (Number(savings) / Number(balance)) * 100;
+  let savingsPercentage = (Number(savings) / Number(balance)) * 100;
+  if(transactions.length === 0){
+  
+    savingsPercentage = 0
+  }
   const chartData = [
   {label:"Expenses",value:Number(totalExpenses),fill:"var(--chart-1)"},
   {label:"Savings",value:Number(savings),fill:"var(--chart-5)"}

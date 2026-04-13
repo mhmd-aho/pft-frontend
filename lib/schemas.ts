@@ -1,8 +1,8 @@
+import {z} from "zod";
     type UserType = {
         username: string;
         email: string;
     }
-
     type ProfileType = {
         id: number;
         user: UserType;
@@ -27,4 +27,27 @@
         category: CategoryType;
         created_at: Date;
     }
-    export type { UserType, ProfileType, TransactionType, TransactionPostType, CategoryType };
+
+const transactionSchema = z.object({
+    amount: z.coerce.number().gt(0,'Amount must be greater than 0'),
+    type: z.enum(['income','expense']),
+    category_id: z.coerce.number().gt(0,'Category is required'),
+});
+const categorySchema = z.object({
+    name: z.string(),
+});
+const signinSchema = z.object({
+    username: z.string().min(3,'username is too short'),
+    password: z.string().min(8,"password is too short"),
+});
+const registerSchema = z.object({
+    username: z.string().min(3,'username is too short'),
+    email: z.string().email(),
+    password: z.string().min(8,"password is too short"),
+    re_password: z.string()
+}).refine((data)=>data.password === data.re_password,{
+    message:"Password don't match",
+    path:["re_password"]
+});
+export {transactionSchema, categorySchema, signinSchema, registerSchema};
+export type { UserType,ProfileType, TransactionType, TransactionPostType, CategoryType };

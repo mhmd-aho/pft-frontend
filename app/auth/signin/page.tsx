@@ -6,18 +6,27 @@ import { Label } from "@/components/ui/label";
 import api from "@/lib/api";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useState } from "react";
 import { toast } from "sonner";
 import { setCookie } from "cookies-next";
 import { useProfile } from "@/context/Profile";
+import {useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { signinSchema } from "@/lib/schemas";
+import {z} from "zod";
+type signin = z.infer<typeof signinSchema>
 export default function SignIn() {
+    const {register,handleSubmit,formState:{ errors }}= useForm<signin>({
+        resolver: zodResolver(signinSchema),
+        defaultValues:{
+            username: '',
+            password: '',
+        },
+    })
     const router = useRouter();
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
     const {refreshProfile} = useProfile();
-    const handleSignIn = async () => {
+    const onSubmit = async (data: signin ) => {
         try{
-            const response = await api.post("/auth/token/login/", {username: username, password: password});
+            const response = await api.post("/auth/token/login/", {username: data.username, password: data.password});
             const token = response.data.auth_token;
             setCookie("token", token, {
                 maxAge: 60 * 60 * 24 * 7,
@@ -27,8 +36,9 @@ export default function SignIn() {
             await refreshProfile();
             router.push("/dashboard");
         }catch(error){
-            console.log(error);
-            toast.error('Invalid credentials');
+            const  data = error?.response?.data 
+            const backendMessage = data?.detail || data?.non_field_errors?.[0] || data?.username?.[0] || data?.password?.[0] || 'Invalid credentials';
+            toast.error(backendMessage);
         }
     }
     return (
@@ -41,18 +51,20 @@ export default function SignIn() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col gap-4">
-                    <div className="grid gap-2">
-                        <Label htmlFor="email" className="text-xl">Username or Email</Label>
-                        <Input value={username} onChange={(e) => setUsername(e.target.value)} className="h-10" id="email" type="text" required />
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="password" className="text-xl">Password</Label>
-                        <Input value={password} onChange={(e) => setPassword(e.target.value)} className="h-10" id="password" type="password" required />
-                    </div>
+                    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-1">
+                            <Label htmlFor="username" className="text-xl">Username</Label>
+                            <Input className={`h-10 ${errors.username? 'border-destructive':''}`} id="username" type="text" {...register('username')}  />
+                            {errors.username && <p className="text-xs text-destructive">{errors.username.message as string}</p>}
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <Label htmlFor="password" className="text-xl">Password</Label>
+                            <Input className={`h-10 ${errors.password?'border-destructive':''}`} id="password" type="password" {...register('password')} />
+                            {errors.password && <p className="text-xs text-destructive">{errors.password.message as string}</p>}
+                        </div>
+                        <Button type="submit" className="w-full h-10 text-xl">Sign In</Button>  
+                    </form>
                 </CardContent>
-                <CardFooter>
-                    <Button onClick={handleSignIn} className="w-full h-10 text-xl">Sign In</Button>
-                </CardFooter>
                 <CardFooter>
                     <p className="text-center text-sm text-muted-foreground">
                         Don&apos;t have an account? <Link href="/auth/signup">Sign Up</Link>

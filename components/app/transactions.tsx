@@ -7,47 +7,60 @@ import { useState, useEffect } from "react";
 import { Input } from "../ui/input";
 import { NativeSelect, NativeSelectOption } from "../ui/native-select";
 import { toast } from "sonner";
-import type { TransactionType } from "@/lib/schemas";
+import { TransactionType,transactionSchema } from "@/lib/schemas";
 import { getUserTransactions, postUserTransaction, getCategories } from "@/app/actions";
 import { useProfile } from "@/context/Profile";
 import { Skeleton } from "../ui/skeleton";
+import { useForm } from "react-hook-form";
+import z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Label } from "../ui/label";
+type transaction = z.infer<typeof transactionSchema>
 export default function Transactions() {
     const {profile,loading} = useProfile();
     const [categories,setCategories] = useState<{id: number, name: string}[]>([]);
-    const [type,setType] = useState<string>("");
-    const [category,setCategory] = useState<string>("");
-    const [amount,setAmount] = useState<number>(0);
+    const [categoriesLoading,setCategoriesLoading] = useState(true);
     const [transactions,setTransactions] = useState<TransactionType[]>([]);
+    const {register,handleSubmit,formState:{errors}} = useForm<transaction>({
+        resolver: zodResolver(transactionSchema),
+        defaultValues:{
+            category_id: undefined,
+            type:undefined,
+            amount: 0
+        }
+    })
+    const onSubmit = async (data: transaction)=>{
+        if(!profile){
+            toast.error('You need to be logged in to add a transaction');
+            return;
+        }
+        const response = await postUserTransaction({
+            category_id: data.category_id,
+            type: data.type,
+            amount: data.amount,
+            profile_id:profile.id})
+        if(response.success){
+            toast.success('Transaction added successfully')
+            const update = await getUserTransactions(profile.id);
+            if(update.success){
+                setTransactions(update.data);
+            }
+        }else{
+            toast.error(response.error)
+        }
+    }
    useEffect(() => {
     const fetchCategories = async () => {
         const response = await getCategories();
         if(response.success){
             setCategories(response.data);
+            setCategoriesLoading(false);
         }
     }
     fetchCategories();
    },[]);
-    const handleAddTransaction = async() => {
-        if(!type || !category || !amount){
-            toast.error("Please fill all the fields");
-            return;
-        }
-        if(!profile){
-            toast.error("Please login");
-            return;
-        }
-        const response = await postUserTransaction({
-            type: type,
-            category_id: parseInt(category),
-            amount:amount,
-            profile_id: profile.id,    
-        });
-        if(response.success){
-            toast.success("Transaction added successfully");
-        }else{
-            toast.error(response.error);
-        }
-    }
+    
+      
     useEffect(() => {
         if(!profile){
             return;
@@ -93,7 +106,10 @@ export default function Transactions() {
                     <CardContent className="flex-1 flex flex-col gap-3">
                         <h1 className="text-xl">Recent Activities</h1>
                         <div className="flex-1 flex flex-col gap-1">
-                            {transactions.map((transaction) => (
+                            {transactions.length === 0 ? (
+                                <p className="text-center text-lg">No transactions yet</p>
+                            ) : (
+                            transactions.map((transaction) => (
                                 <div key={transaction.created_at.toString()} className="flex items-center justify-between px-2">
                                     <div>
                                         <h1 className="text-lg">{transaction.category.name}</h1>
@@ -101,28 +117,43 @@ export default function Transactions() {
                                     </div>
                                     <p className={`text-lg ${transaction.type === "income" ? "text-success" : "text-destructive"}`}>{transaction.type === "income" ? "+" : "-"}{transaction.amount}</p>
                                 </div>
-                            ))}
+                            ))
+                            )}
                         </div>
                     </CardContent>
                     <CardFooter className="flex justify-end">
                         <Popover>
-                            <PopoverTrigger asChild>
+                            <PopoverTrigger disabled={categoriesLoading} asChild>
                                 <Button><Plus className="size-4"/> Add Transaction</Button>
                             </PopoverTrigger>
-                            <PopoverContent className="h-fit">
-                                    <Input type="number" placeholder="Amount" onChange={(e) => setAmount(Number(e.target.value))} />
-                                    <NativeSelect className="w-full" onChange={(e) => setType(e.target.value)}>
-                                        <NativeSelectOption>Select Type</NativeSelectOption>
-                                        <NativeSelectOption value="income">Income</NativeSelectOption>
-                                        <NativeSelectOption value="expense">Expense</NativeSelectOption>
-                                    </NativeSelect>
-                                    <NativeSelect className="w-full" onChange={(e) => setCategory(e.target.value)}>
-                                        <NativeSelectOption>Select Category</NativeSelectOption>
-                                        {categories.map((category) => (
-                                            <NativeSelectOption key={category.id} value={category.id}>{category.name}</NativeSelectOption>
-                                        ))}
-                                    </NativeSelect>
-                                    <Button onClick={handleAddTransaction}>Add Transaction</Button>
+                            <PopoverContent className="h-fit w-80">
+                                <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-1">
+                                    <div className="flex flex-col gap-1">
+                                        <Label htmlFor="amount">Amount</Label>
+                                        <Input type="number" placeholder="Amount" {...register("amount")} />
+                                        {errors.amount && <p className="text-destructive">{errors.amount.message}</p>}
+                                    </div>
+                                    <div className="flex flex-col gap-1">
+                                        <Label htmlFor="type">Type</Label>
+                                        <NativeSelect className="w-full" {...register("type")}>
+                                            <NativeSelectOption value=''>Select Type</NativeSelectOption>
+                                            <NativeSelectOption value="income">Income</NativeSelectOption>
+                                            <NativeSelectOption value="expense">Expense</NativeSelectOption>
+                                        </NativeSelect>
+                                        {errors.type && <p className="text-destructive">{errors.type.message}</p>}
+                                    </div>
+                                    <div className="flex flex-col gap-1">
+                                        <Label htmlFor="category_id">Category</Label>
+                                        <NativeSelect className="w-full" {...register("category_id")}>
+                                            <NativeSelectOption value=''>Select Category</NativeSelectOption>
+                                            {categories.map((category) => (
+                                                <NativeSelectOption key={category.id} value={category.id}>{category.name}</NativeSelectOption>
+                                            ))}
+                                        </NativeSelect>
+                                        {errors.category_id && <p className="text-destructive">{errors.category_id.message}</p>}
+                                    </div>
+                                    <Button type="submit">Add Transaction</Button>
+                                </form>
                             </PopoverContent>
                         </Popover>
                     </CardFooter>

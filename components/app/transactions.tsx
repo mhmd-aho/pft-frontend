@@ -3,12 +3,12 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../ui/card
 import { Button } from "../ui/button";
 import { Plus } from "lucide-react";
 import {Popover, PopoverContent, PopoverTrigger} from "../ui/popover";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useTransition } from "react";
 import { Input } from "../ui/input";
 import { NativeSelect, NativeSelectOption } from "../ui/native-select";
 import { toast } from "sonner";
 import { TransactionType,transactionSchema } from "@/lib/schemas";
-import { getUserTransactions, postUserTransaction, getCategories } from "@/app/actions";
+import { getUserLastActivites, postUserTransaction, getCategories } from "@/app/actions";
 import { useProfile } from "@/context/Profile";
 import { Skeleton } from "../ui/skeleton";
 import { useForm } from "react-hook-form";
@@ -18,6 +18,7 @@ import { Label } from "../ui/label";
 type transaction = z.infer<typeof transactionSchema>
 export default function Transactions() {
     const {profile,loading} = useProfile();
+    const [isPending,startTransition] = useTransition()
     const [categories,setCategories] = useState<{id: number, name: string}[]>([]);
     const [categoriesLoading,setCategoriesLoading] = useState(true);
     const [transactions,setTransactions] = useState<TransactionType[]>([]);
@@ -29,25 +30,28 @@ export default function Transactions() {
             amount: 0
         }
     })
-    const onSubmit = async (data: transaction)=>{
-        if(!profile){
-            toast.error('You need to be logged in to add a transaction');
-            return;
-        }
-        const response = await postUserTransaction({
-            category_id: data.category_id,
-            type: data.type,
-            amount: data.amount,
-            profile_id:profile.id})
-        if(response.success){
-            toast.success('Transaction added successfully')
-            const update = await getUserTransactions(profile.id);
-            if(update.success){
-                setTransactions(update.data);
+    const onSubmit = (data: transaction)=>{
+        startTransition( async()=>{
+            if(!profile){
+                toast.error('You need to be logged in to add a transaction');
+                return;
             }
-        }else{
-            toast.error(response.error)
-        }
+            const response = await postUserTransaction({
+                category_id: data.category_id,
+                type: data.type,
+                amount: data.amount,
+                profile_id:profile.id})
+            if(response.success){
+                toast.success('Transaction added successfully')
+                const update = await getUserLastActivites(profile.id);
+                if(update.success){
+                    setTransactions(update.data);
+                }
+            }else{
+                toast.error(response.error)
+            }
+
+        })
     }
    useEffect(() => {
     const fetchCategories = async () => {
@@ -66,7 +70,7 @@ export default function Transactions() {
             return;
         }
         const fetchTransactions = async () => {
-            const response = await getUserTransactions(profile.id);
+            const response = await getUserLastActivites(profile.id);
             if(response.success){
                 setTransactions(response.data);
             }else{
@@ -83,7 +87,7 @@ export default function Transactions() {
                         <CardTitle className="text-3xl">Transactions</CardTitle>
                     </CardHeader>
                     <CardContent className="flex-1 flex flex-col gap-3">
-                        <h1 className="text-xl">Recent Activities</h1>
+                        <h1 className="text-xl">Last 10 days activities</h1>
                         <div className="flex-1 flex flex-col gap-1">
                             {
                                 Array.from({length: 5}).map((_,i) => (
@@ -98,13 +102,14 @@ export default function Transactions() {
         </Card>
         )
     }
+    const option = {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}
     return (
     <Card className="col-start-4 col-end-7 row-start-2 row-end-6">
                     <CardHeader>
                         <CardTitle className="text-3xl">Transactions</CardTitle>
                     </CardHeader>
                     <CardContent className="flex-1 flex flex-col gap-3">
-                        <h1 className="text-xl">Recent Activities</h1>
+                        <h1 className="text-xl">Last 10 days activities</h1>
                         <div className="flex-1 flex flex-col gap-1">
                             {transactions.length === 0 ? (
                                 <p className="text-center text-lg">No transactions yet</p>
@@ -113,7 +118,7 @@ export default function Transactions() {
                                 <div key={transaction.created_at.toString()} className="flex items-center justify-between px-2">
                                     <div>
                                         <h1 className="text-lg">{transaction.category.name}</h1>
-                                        <p className="text-sm text-muted-foreground">{new Date(transaction.created_at).toDateString()}</p>
+                                        <p className="text-sm text-muted-foreground">{new Date(transaction.created_at).toLocaleDateString('en-US',option)}</p>
                                     </div>
                                     <p className={`text-lg ${transaction.type === "income" ? "text-success" : "text-destructive"}`}>{transaction.type === "income" ? "+" : "-"}{transaction.amount}</p>
                                 </div>
@@ -130,7 +135,7 @@ export default function Transactions() {
                                 <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-1">
                                     <div className="flex flex-col gap-1">
                                         <Label htmlFor="amount">Amount</Label>
-                                        <Input type="number" placeholder="Amount" {...register("amount")} />
+                                        <Input type='number' placeholder="Amount" {...register("amount")} />
                                         {errors.amount && <p className="text-destructive">{errors.amount.message}</p>}
                                     </div>
                                     <div className="flex flex-col gap-1">
@@ -152,7 +157,7 @@ export default function Transactions() {
                                         </NativeSelect>
                                         {errors.category_id && <p className="text-destructive">{errors.category_id.message}</p>}
                                     </div>
-                                    <Button type="submit">Add Transaction</Button>
+                                    <Button disabled={isPending}  type="submit">Add Transaction</Button>
                                 </form>
                             </PopoverContent>
                         </Popover>

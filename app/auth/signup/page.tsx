@@ -13,8 +13,10 @@ import { useProfile } from "@/context/Profile";
 import api from "@/lib/api";
 import { setCookie } from "cookies-next";
 import { toast } from "sonner";
+import { useTransition } from "react";
 type signup = z.infer<typeof registerSchema>
 export default function SignUp() {
+    const [isPending,startTransition] = useTransition()
   const {register,handleSubmit,formState:{ errors }}= useForm<signup>({
         resolver: zodResolver(registerSchema),
         defaultValues:{
@@ -26,24 +28,27 @@ export default function SignUp() {
     })
     const router = useRouter();
     const {refreshProfile} = useProfile();
-    const onSubmit = async (data: signup ) => {
-        try{
-            const response = await api.post("/auth/users/", {username: data.username,email: data.email ,password: data.password,re_password: data.re_password});
-            if(response.status == 201){
-                const getToken = await api.post('/auth/token/login/',{username: data.username, password: data.password})
-                const token =  getToken.data.auth_token 
-                setCookie("token", token, {
-                    maxAge: 60 * 60 * 24 * 7,
-                    path: "/",
-                });
-                toast.success('Sign up successfully')
-                await refreshProfile()
-                router.push('/dashboard')
-            }
-        }catch(error){
-            const backendMessage = error.response?.data?.detail || error.response?.data?.username?.[0] || error.response?.data?.email?.[0] || error.response?.data?.password?.[0] || error.response?.data?.re_password?.[0] || 'Registration failed';
-            toast.error(backendMessage);
-        }
+    const onSubmit = (data: signup ) => {
+       startTransition(async()=>{
+           try{
+               const response = await api.post("/auth/users/", {username: data.username,email: data.email ,password: data.password,re_password: data.re_password});
+               if(response.status == 201){
+                   const getToken = await api.post('/auth/token/login/',{username: data.username, password: data.password})
+                   const token =  getToken.data.auth_token 
+                   setCookie("token", token, {
+                       maxAge: 60 * 60 * 24 * 7,
+                       path: "/",
+                   });
+                   toast.success('Sign up successfully')
+                   await refreshProfile()
+                   router.push('/dashboard')
+               }
+           }catch(error){
+               const backendMessage = error.response?.data?.detail || error.response?.data?.username?.[0] || error.response?.data?.email?.[0] || error.response?.data?.password?.[0] || error.response?.data?.re_password?.[0] || 'Registration failed';
+               toast.error(backendMessage);
+           }
+
+       })
     }
     return (
         <section className="w-screen h-screen flex items-center justify-center">
@@ -76,7 +81,7 @@ export default function SignUp() {
                             <Input className={`h-10 ${errors.re_password?'border-destructive':''}`} id="re_password" type="password" {...register('re_password')} />
                             {errors.re_password && <p className="text-xs text-destructive">{errors.re_password.message as string}</p>}
                         </div>
-                        <Button type="submit" className="w-full h-10 text-xl">Sign Up</Button>  
+                        <Button disabled={isPending} type="submit" className="w-full h-10 text-xl">Sign Up</Button>  
                     </form>
                 </CardContent>
                 <CardFooter>

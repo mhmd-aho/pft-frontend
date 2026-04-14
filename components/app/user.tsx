@@ -33,7 +33,7 @@ export default function User() {
             <HoverCardTrigger>
                 <p>{profile.user.username}</p>
             </HoverCardTrigger>
-            <HoverCardContent>
+            <HoverCardContent className="w-fit">
                 <Button onClick={handleLogout}>Logout</Button>
             </HoverCardContent>
         </HoverCard>

@@ -23,7 +23,7 @@ import {z} from "zod";
         id: number;
         profile: ProfileType;
         amount: number;
-        type: string;
+        type: 'income' | 'expense';
         category: CategoryType;
         created_at: Date;
     }
@@ -32,9 +32,6 @@ const transactionSchema = z.object({
     amount: z.coerce.number().gt(0,'Amount must be greater than 0'),
     type: z.enum(['income','expense']),
     category_id: z.coerce.number().gt(0,'Category is required'),
-});
-const categorySchema = z.object({
-    name: z.string(),
 });
 const signinSchema = z.object({
     username: z.string().min(3,'username is too short'),

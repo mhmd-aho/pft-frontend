@@ -1,12 +1,40 @@
 import api from "@/lib/api";
 import type { TransactionPostType } from "@/lib/schemas";
 
-export async function getUserTransactions(id:number) {
+export async function getUserLastActivites(id:number) {
     try {
-        const response = await api.get(`/api/transactions/${id}/`);
+        const response = await api.get(`/api/transactions/${id}/last-ten-days/`);
         return {
             success:true,
-            data:response.data
+            data:response.data.results
+        };
+    } catch (error:any) {
+        const serverError = error.response?.data;
+        if(serverError?.amount){
+            return {
+                success:false,
+                error: serverError.amount[0]
+            };
+        }else if(serverError?.detail){
+            return {
+                success:false,
+                error: serverError.detail
+            };
+        }else{
+            return {
+                success:false,
+                error: "Something went wrong"
+            };
+        }
+    }
+}
+
+export async function getUserMonthlyTransactions(id:number) {
+    try {
+        const response = await api.get(`/api/transactions/${id}/monthly/`);
+        return {
+            success:true,
+            data:response.data.results
         };
     } catch (error:any) {
         const serverError = error.response?.data;

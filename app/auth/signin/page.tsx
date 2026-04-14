@@ -13,8 +13,10 @@ import {useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signinSchema } from "@/lib/schemas";
 import {z} from "zod";
+import { useTransition } from "react";
 type signin = z.infer<typeof signinSchema>
 export default function SignIn() {
+    const [isPending,startTransition] = useTransition()
     const {register,handleSubmit,formState:{ errors }}= useForm<signin>({
         resolver: zodResolver(signinSchema),
         defaultValues:{
@@ -24,22 +26,25 @@ export default function SignIn() {
     })
     const router = useRouter();
     const {refreshProfile} = useProfile();
-    const onSubmit = async (data: signin ) => {
-        try{
-            const response = await api.post("/auth/token/login/", {username: data.username, password: data.password});
-            const token = response.data.auth_token;
-            setCookie("token", token, {
-                maxAge: 60 * 60 * 24 * 7,
-                path: "/",
-            });
-            toast.success("Signed in successfully");
-            await refreshProfile();
-            router.push("/dashboard");
-        }catch(error){
-            const  data = error?.response?.data 
-            const backendMessage = data?.detail || data?.non_field_errors?.[0] || data?.username?.[0] || data?.password?.[0] || 'Invalid credentials';
-            toast.error(backendMessage);
-        }
+    const onSubmit = (data: signin ) => {
+        startTransition(async ()=>{
+            try{
+                const response = await api.post("/auth/token/login/", {username: data.username, password: data.password});
+                const token = response.data.auth_token;
+                setCookie("token", token, {
+                    maxAge: 60 * 60 * 24 * 7,
+                    path: "/",
+                });
+                toast.success("Signed in successfully");
+                await refreshProfile();
+                router.push("/dashboard");
+            }catch(error){
+                const  data = error?.response?.data 
+                const backendMessage = data?.detail || data?.non_field_errors?.[0] || data?.username?.[0] || data?.password?.[0] || 'Invalid credentials';
+                toast.error(backendMessage);
+            }
+
+        })
     }
     return (
         <section className="w-screen h-screen flex items-center justify-center">
@@ -62,7 +67,7 @@ export default function SignIn() {
                             <Input className={`h-10 ${errors.password?'border-destructive':''}`} id="password" type="password" {...register('password')} />
                             {errors.password && <p className="text-xs text-destructive">{errors.password.message as string}</p>}
                         </div>
-                        <Button type="submit" className="w-full h-10 text-xl">Sign In</Button>  
+                        <Button disabled={isPending} type="submit" className="w-full h-10 text-xl">Sign In</Button>  
                     </form>
                 </CardContent>
                 <CardFooter>

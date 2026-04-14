@@ -4,7 +4,7 @@ import { TrendingUp } from "lucide-react"
 import { Label, Pie, PieChart } from "recharts"
 import { useProfile } from "@/context/Profile";
 import { useMemo, useState, useEffect } from "react";
-import { getUserTransactionsByType } from "@/app/actions";
+import { getUserMonthlyTransactions } from "@/app/actions";
 import type { TransactionType } from "@/lib/schemas";
 
 import {
@@ -40,12 +40,15 @@ export function ChartPieDonutText() {
   const {profile} = useProfile();
   const [transactions,setTransactions] = useState<TransactionType[]>([]);
   const totalExpenses = useMemo(() => {
-    return transactions.reduce((acc,transaction) => acc + Number(transaction.amount),0);
+    return transactions.filter(t=>t.type==="expense").reduce((acc,transaction) => acc + Number(transaction.amount),0);
+  },[transactions]);
+  const balance = useMemo(() => {
+    return transactions.filter(t=>t.type==="income").reduce((acc,transaction) => acc + Number(transaction.amount),0);
   },[transactions]);
   useEffect(() => {
     if(profile){
       const fetchTransactions = async () => {
-        const response = await getUserTransactionsByType(profile.id,"expense");
+        const response = await getUserMonthlyTransactions(profile.id);
         if(response.success){
           setTransactions(response.data);
         }
@@ -56,8 +59,7 @@ export function ChartPieDonutText() {
   if(!profile){
     return <div>Loading...</div>
   }
-  const balance = Number(profile.balance) + Number(totalExpenses);
-  const savings = balance - Number(totalExpenses);
+  const savings = Number(balance) - Number(totalExpenses);
   let savingsPercentage = (Number(savings) / Number(balance)) * 100;
   if(transactions.length === 0){
   
@@ -70,8 +72,8 @@ export function ChartPieDonutText() {
   return (
     <Card className="flex flex-col">
       <CardHeader className="items-center pb-0">
-        <CardTitle>Last Month</CardTitle>
-        <CardDescription>April 2026</CardDescription>
+        <CardTitle>This Month</CardTitle>
+        <CardDescription>{new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'})}</CardDescription>
       </CardHeader>
       <CardContent className="flex-1 pb-0">
         <ChartContainer
@@ -130,7 +132,7 @@ export function ChartPieDonutText() {
           You are saving  {savingsPercentage.toFixed(2)}% from your income <TrendingUp className="h-4 w-4" />
         </div>
         <div className="leading-none text-muted-foreground">
-          Showing total income for the last month
+          Showing total income for this month
         </div>
       </CardFooter>
     </Card>

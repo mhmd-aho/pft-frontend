@@ -1,167 +1,47 @@
-'use client'
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../ui/card";
-import { Button } from "../ui/button";
-import { Plus } from "lucide-react";
-import {Popover, PopoverContent, PopoverTrigger} from "../ui/popover";
-import { useState, useEffect, useTransition } from "react";
-import { Input } from "../ui/input";
-import { NativeSelect, NativeSelectOption } from "../ui/native-select";
-import { toast } from "sonner";
-import { TransactionType,transactionSchema } from "@/lib/schemas";
-import { getUserLastActivites, postUserTransaction, getCategories } from "@/app/actions";
+"use client"
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { useProfile } from "@/context/Profile";
+import { useEffect, useState, useMemo, useTransition } from "react";
+import { getUserTransactionsByType } from "@/app/actions";
+import { toast } from "sonner";
 import { Skeleton } from "../ui/skeleton";
-import { useForm } from "react-hook-form";
-import z from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Label } from "../ui/label";
-type transaction = z.infer<typeof transactionSchema>
-export default function Transactions() {
-    const {profile,loading} = useProfile();
-    const [isPending,startTransition] = useTransition()
-    const [categories,setCategories] = useState<{id: number, name: string}[]>([]);
-    const [categoriesLoading,setCategoriesLoading] = useState(true);
-    const [transactions,setTransactions] = useState<TransactionType[]>([]);
-    const {register,handleSubmit,formState:{errors}} = useForm<transaction>({
-        resolver: zodResolver(transactionSchema),
-        defaultValues:{
-            category_id: undefined,
-            type:undefined,
-            amount: 0
-        }
-    })
-    const onSubmit = (data: transaction)=>{
-        startTransition( async()=>{
-            if(!profile){
-                toast.error('You need to be logged in to add a transaction');
-                return;
-            }
-            const response = await postUserTransaction({
-                category_id: data.category_id,
-                type: data.type,
-                amount: data.amount,
-                profile_id:profile.id})
-            if(response.success){
-                toast.success('Transaction added successfully')
-                const update = await getUserLastActivites(profile.id);
-                if(update.success){
-                    setTransactions(update.data);
-                }
-            }else{
-                toast.error(response.error)
-            }
-
-        })
+import type { TransactionType } from "@/lib/schemas";
+import { format } from "@/lib/utils";
+export default function Transactions({type}: {type: "expense" | "income"}) {
+    const {profile} = useProfile();
+    const [transactions, setTransactions] = useState<TransactionType[]>([]);
+    const [isPending,startTransition] = useTransition();
+    const positions={
+        income:"sm:col-start-3 sm:col-span-2 sm:row-start-1 row-start-2 col-start-1",
+        expense:"sm:col-start-5 sm:col-span-2 sm:row-start-1 row-start-2 col-start-2"
     }
-   useEffect(() => {
-    const fetchCategories = async () => {
-        const response = await getCategories();
-        if(response.success){
-            setCategories(response.data);
-            setCategoriesLoading(false);
-        }
-    }
-    fetchCategories();
-   },[]);
-    
-      
     useEffect(() => {
-        if(!profile){
-            return;
+        if(profile){
+            const fetchTransactions = () => {
+                startTransition(async () => {
+                    const response = await getUserTransactionsByType(profile.id,type);
+                    if(response.success){
+                        setTransactions(response.data);
+                    }else{
+                        toast.error(response.error);
+                    }
+                });
+            };
+            fetchTransactions();
         }
-        const fetchTransactions = async () => {
-            const response = await getUserLastActivites(profile.id);
-            if(response.success){
-                setTransactions(response.data);
-            }else{
-                toast.error(response.error);
-            }
-            return response;
-        }
-        fetchTransactions();
     },[profile]);
-    if(loading){
-        return(
-            <Card className="col-start-4 col-end-7 row-start-2 row-end-6">
-                    <CardHeader>
-                        <CardTitle className="text-3xl">Transactions</CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex-1 flex flex-col gap-3">
-                        <h1 className="text-xl">Last 10 days activities</h1>
-                        <div className="flex-1 flex flex-col gap-1">
-                            {
-                                Array.from({length: 5}).map((_,i) => (
-                                    <Skeleton key={i} className="w-full h-10 mx-1" />
-                                ))
-                            }
-                        </div>
-                    </CardContent>
-                    <CardFooter className="flex justify-end">
-                       <Skeleton className="w-32 h-10" />
-                    </CardFooter>
-        </Card>
-        )
-    }
-    const option = {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}
+    const total = useMemo(() => {
+        return transactions.reduce((acc,transaction) => acc + Number(transaction.amount),0);
+    },[transactions]);
+    const formattedTotal = format.format(total);
     return (
-    <Card className="col-start-4 col-end-7 row-start-2 row-end-6">
+        <Card className={`${positions[type]} max-sm:gap-1 max-sm:py-1`}>
                     <CardHeader>
-                        <CardTitle className="text-3xl">Transactions</CardTitle>
+                        <CardTitle className="sm:text-3xl text-xl">{type === "expense" ? "Expenses" : "Incomes"}</CardTitle>
                     </CardHeader>
-                    <CardContent className="flex-1 flex flex-col gap-3">
-                        <h1 className="text-xl">Last 10 days activities</h1>
-                        <div className="flex-1 flex flex-col gap-1">
-                            {transactions.length === 0 ? (
-                                <p className="text-center text-lg">No transactions yet</p>
-                            ) : (
-                            transactions.map((transaction) => (
-                                <div key={transaction.created_at.toString()} className="flex items-center justify-between px-2">
-                                    <div>
-                                        <h1 className="text-lg">{transaction.category.name}</h1>
-                                        <p className="text-sm text-muted-foreground">{new Date(transaction.created_at).toLocaleDateString('en-US',option)}</p>
-                                    </div>
-                                    <p className={`text-lg ${transaction.type === "income" ? "text-success" : "text-destructive"}`}>{transaction.type === "income" ? "+" : "-"}{transaction.amount}</p>
-                                </div>
-                            ))
-                            )}
-                        </div>
+                    <CardContent>
+                        {isPending ? <Skeleton className="w-full h-5" /> : <p className="sm:text-xl text-lg">{formattedTotal}</p>}
                     </CardContent>
-                    <CardFooter className="flex justify-end">
-                        <Popover>
-                            <PopoverTrigger disabled={categoriesLoading} asChild>
-                                <Button><Plus className="size-4"/> Add Transaction</Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="h-fit w-80">
-                                <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-1">
-                                    <div className="flex flex-col gap-1">
-                                        <Label htmlFor="amount">Amount</Label>
-                                        <Input type='number' placeholder="Amount" {...register("amount")} />
-                                        {errors.amount && <p className="text-destructive">{errors.amount.message}</p>}
-                                    </div>
-                                    <div className="flex flex-col gap-1">
-                                        <Label htmlFor="type">Type</Label>
-                                        <NativeSelect className="w-full" {...register("type")}>
-                                            <NativeSelectOption value=''>Select Type</NativeSelectOption>
-                                            <NativeSelectOption value="income">Income</NativeSelectOption>
-                                            <NativeSelectOption value="expense">Expense</NativeSelectOption>
-                                        </NativeSelect>
-                                        {errors.type && <p className="text-destructive">{errors.type.message}</p>}
-                                    </div>
-                                    <div className="flex flex-col gap-1">
-                                        <Label htmlFor="category_id">Category</Label>
-                                        <NativeSelect className="w-full" {...register("category_id")}>
-                                            <NativeSelectOption value=''>Select Category</NativeSelectOption>
-                                            {categories.map((category) => (
-                                                <NativeSelectOption key={category.id} value={category.id}>{category.name}</NativeSelectOption>
-                                            ))}
-                                        </NativeSelect>
-                                        {errors.category_id && <p className="text-destructive">{errors.category_id.message}</p>}
-                                    </div>
-                                    <Button disabled={isPending}  type="submit">Add Transaction</Button>
-                                </form>
-                            </PopoverContent>
-                        </Popover>
-                    </CardFooter>
         </Card>
     );
 }

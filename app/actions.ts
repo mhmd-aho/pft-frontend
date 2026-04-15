@@ -1,16 +1,19 @@
 import api from "@/lib/api";
 import type { TransactionPostType } from "@/lib/schemas";
-
+import axios from "axios";
 const errorHandler = (error: unknown) => {
-    const e = error as any;
-    const serverError = e?.response?.data;
-    if(serverError?.amount){
-        return serverError.amount[0]
-    }else if(serverError?.detail){
-        return serverError.detail
-    }else{
-        return "Something went wrong"
+    if(axios.isAxiosError(error)){
+        const serverError = error.response?.data;
+        if(serverError?.amount){
+            return serverError.amount[0]
+        }else if(serverError?.detail){
+            return serverError.detail
+        }
     }
+    if(error instanceof Error){
+        return error.message
+    }
+    return "Something went wrong"
 }
 export async function getUserLastActivites(id:number) {
     try {

@@ -84,7 +84,7 @@ const formattedTotalIncome = format.format(totalIncome);
             <Loader2 className="size-52 animate-spin m-auto" />
         ) : (
           !profile ? (
-            <p>No profile found</p>
+            <p className="text-lg text-center">No profile found</p>
           ) : (
         <ChartContainer
           config={chartConfig}

@@ -3,15 +3,8 @@ import { createContext, useContext, useState, useEffect, useCallback } from "rea
 import api from "@/lib/api";
 import { getCookie, setCookie } from "cookies-next";
 import { toast } from "sonner";
-type UserType = {
-    username: string;
-    email: string;
-}
-type ProfileType = {
-    id: number;
-    user: UserType;
-    balance: number;
-}
+import type { ProfileType} from "@/lib/schemas";
+import axios from "axios";
 interface ProfileContextType {
     profile: ProfileType | null;
     loading: boolean;
@@ -30,10 +23,13 @@ export const ProfileProvider = ({children}: {children: React.ReactNode}) => {
         const profileResponse = await api.get(`/api/profiles/${user.username}/`);
         setProfile(profileResponse.data);
        }catch(error){
-        const e = error as any;
-        const message = e?.response?.data?.detail ?? "Failed to fetch profile";
+        if(axios.isAxiosError(error)){
+            const message = error.response?.data?.detail || error.response?.data?.message ||"Failed to fetch profile";
+            toast.error(message);
+        }else{
+            toast.error("Failed to fetch profile");
+        }
         setProfile(null);
-        toast.error(message);
 
        }finally{
         setLoading(false);
@@ -52,8 +48,12 @@ export const ProfileProvider = ({children}: {children: React.ReactNode}) => {
             await api.post("/auth/token/logout/");
             toast.success("Logged out successfully");
         }catch(error){
-            const message = error?.response?.data?.detail || error?.response?.data?.message ||"Failed to logout";
-            toast.error(message);
+            if(axios.isAxiosError(error)){
+                const message = error.response?.data?.detail || error.response?.data?.message ||"Failed to logout";
+                toast.error(message);
+            }else{
+                toast.error("Failed to logout");
+            }
         }
         setCookie("token", "", {
             maxAge: 0,

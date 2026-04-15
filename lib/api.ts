@@ -39,5 +39,13 @@ api.interceptors.response.use(
         return Promise.reject(error);
     }
 );
-
+export async function getServerApi(cookies:()=>Promise<any> ){
+    const token = await getCookie("token",{ cookies })
+    return axios.create({
+        baseURL: 'http://127.0.0.1:8000/',
+        headers:{
+            Authorization:`Token ${token}`
+        }
+    });
+}
 export default api;

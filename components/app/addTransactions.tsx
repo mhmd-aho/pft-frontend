@@ -1,6 +1,5 @@
 'use client'
 import { getUserLastActivites, postUserTransaction, getCategories } from "@/app/actions";
-import { useProfile } from "@/context/Profile";
 import { useState, useEffect, useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -14,9 +13,23 @@ import { NativeSelect, NativeSelectOption } from "../ui/native-select";
 import { Label } from "../ui/label";
 import { toast } from "sonner";
 import { Skeleton } from "../ui/skeleton";
+import api from "@/lib/api";
 type TransactionForm = z.infer<typeof transactionSchema>
 export default function AddTransactions() {
-    const {profile,loading} = useProfile();
+    const [profile,setProfile] = useState<{id: number, name: string} | null>(null);
+    const [loading,setLoading] = useState(true);
+    useEffect(() => {
+        const fetchProfile = async () => {
+            const response = await api.get('auth/users/me/');
+            const user = response.data;
+            const profile = await api.get(`api/profiles/${user.username}/`);
+            if(profile.status === 200){
+                setProfile(profile.data);
+                setLoading(false);
+            }
+        }
+        fetchProfile();
+    },[]);
     const [isPending,startTransition] = useTransition()
     const [categories,setCategories] = useState<{id: number, name: string}[]>([]);
     const [categoriesLoading,setCategoriesLoading] = useState(true);
@@ -64,12 +77,7 @@ export default function AddTransactions() {
     return (
             <Popover>
                 <PopoverTrigger disabled={categoriesLoading} asChild>
-                    {
-                        loading?
-                        <Skeleton className="w-full h-10" />
-                        :
-                        <Button className="max-sm:w-full"><Plus className="size-4"/> Add Transaction</Button>
-                    }
+                    <Button className="max-sm:w-full"><Plus className="size-4"/> Add Transaction</Button>
                 </PopoverTrigger>
                 <PopoverContent className="h-fit w-80">
                     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-1">

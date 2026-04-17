@@ -11,14 +11,13 @@ const chartConfig = {
 } satisfies ChartConfig
 
 interface ChartDisplayProps {
-  totalIncome: number;
   totalExpenses: number;
   savings: number;
   savingsPercentage: number;
   formattedTotalIncome: string;
 }
 
-export function ChartDisplay({ totalIncome, totalExpenses, savings, savingsPercentage, formattedTotalIncome }: ChartDisplayProps) {
+export function ChartDisplay({ totalExpenses, savings, savingsPercentage, formattedTotalIncome }: ChartDisplayProps) {
   const chartData = [
     { label: "Expenses", value: totalExpenses, fill: "var(--chart-1)" },
     { label: "Savings", value: savings, fill: "var(--chart-5)" }

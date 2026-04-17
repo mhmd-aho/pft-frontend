@@ -8,12 +8,13 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import { setCookie } from "cookies-next";
-import { useProfile } from "@/context/Profile";
 import {useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signinSchema } from "@/lib/schemas";
 import {z} from "zod";
 import { useTransition } from "react";
+import axios from "axios";
+import { signinAction } from "@/app/actions";
 type SignInFormType = z.infer<typeof signinSchema>
 export function SignInForm() {
     const [isPending,startTransition] = useTransition()
@@ -25,24 +26,19 @@ export function SignInForm() {
         },
     })
     const router = useRouter();
-    const {refreshProfile} = useProfile();
     const onSubmit = (data: SignInFormType ) => {
         startTransition(async ()=>{
             try{
-                const response = await api.post("/auth/token/login/", {username: data.username, password: data.password});
-                const token = response.data.auth_token;
-                setCookie("token", token, {
-                    maxAge: 60 * 60 * 24 * 7,
-                    path: "/",
-                });
-                toast.success("Signed in successfully");
-                await refreshProfile();
-                router.push("/dashboard");
-            }catch(error:unknown){
-                const e = error as any;
-                const  data = e?.response?.data 
-                const backendMessage = data?.detail || data?.non_field_errors?.[0] || data?.username?.[0] || data?.password?.[0] || 'Invalid credentials';
-                toast.error(backendMessage);
+                const res = await signinAction(data);
+                if(res.success){
+                    toast.success("Signed in successfully");
+                    router.push("/dashboard");
+                }else{
+                    toast.error(res.error);
+                }
+                
+            }catch{
+                toast.error("Something went wrong");
             }
 
         })

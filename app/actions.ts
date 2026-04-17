@@ -1,95 +1,174 @@
-import api from "@/lib/api";
-import type { TransactionPostType } from "@/lib/schemas";
-import axios from "axios";
-const errorHandler = (error: unknown) => {
-    if(axios.isAxiosError(error)){
-        const serverError = error.response?.data;
-        if(serverError?.amount){
-            return serverError.amount[0]
-        }else if(serverError?.detail){
-            return serverError.detail
+'use server'
+import {z} from "zod";
+import { revalidateTag } from "next/cache";
+import {transactionSchema} from "@/lib/schemas";
+import { serverFetch } from "@/lib/server-fetch";
+import { signinSchema, registerSchema } from "@/lib/schemas";
+import { cookies } from "next/headers";
+export async function postTransaction(data:z.infer<typeof transactionSchema>, profile_id: number) {
+    try{
+        const res = await serverFetch(`/api/transactions/${profile_id}/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({...data, profile_id})
+        });
+
+        if (!res.ok) {
+            const errorData = await res.json();
+            throw errorData;
         }
-    }
-    if(error instanceof Error){
-        return error.message
-    }
-    return "Something went wrong"
-}
-export async function getUserLastActivites(id:number) {
-    try {
-        const response = await api.get(`/api/transactions/${id}/last-ten-days/`);
-        return {
-            success:true,
-            data:response.data.results
-        };
-    } catch (error: unknown) {
-        const message = errorHandler(error);
-        return {
-            success:false,
-            error: message
-        };
-    }
-}
 
-export async function getUserMonthlyTransactions(id:number) {
-    try {
-        const response = await api.get(`/api/transactions/${id}/monthly/`);
-        return {
-            success:true,
-            data:response.data.results
-        };
-    } catch (error: unknown) {
-        const message = errorHandler(error);
-        return {
-            success:false,
-            error: message
-        };
+        revalidateTag('transactions');
+        return { success: true };
+    }catch(error: any){
+        if(error?.detail){
+            return {error: error.detail}
+        }
+        if(error?.amount){
+            return {error: error.amount[0]}
+        }
+        if(error?.type){
+            return {error: error.type[0]}
+        }
+        if(error?.category_id){
+            return {error: error.category_id[0]}
+        }
+        return {error: 'Something went wrong'}
     }
 }
+export async function deleteTransaction(transaction_id: number) {
+    try{
+        const res = await serverFetch(`/api/transactions/${transaction_id}/`, {
+            method: "DELETE",
+        });
 
-export async function getUserTransactionsByType(id:number,type:string) {
-    try {
-        const response = await api.get(`/api/transactions/${id}/?type=${type}`);
-        return {
-            success:true,
-            data:response.data
-        };
-    } catch (error: unknown) {
-        const message = errorHandler(error);
-        return {
-            success:false,
-            error: message
-        };
-    }
-}
+        if (!res.ok) {
+            const errorData = await res.json();
+            throw errorData;
+        }
 
-export async function postUserTransaction(data: TransactionPostType) {
-    try {
-        const response = await api.post(`/api/transactions/${data.profile_id}/`, data);
-        return {
-            success:true,
-            data:response.data
-        };
-    } catch (error: unknown) {
-        const message = errorHandler(error);
-        return {
-            success:false,
-            error: message
-        };
+        revalidateTag('transactions');
+        return { success: true };
+    }catch(error: any){
+        if(error?.detail){
+            return {error: error.detail}
+        }
+        return {error: 'Something went wrong'}
     }
 }
-export async function getCategories() {
-    try {
-        const response = await api.get("/api/categories/");
-        return {
-            success:true,
-            data:response.data.results
-        };
-    } catch (error: unknown) {
-        const message = errorHandler(error);
-        return {
-            success:false,
-            error: message
-        };
+export async function signinAction(data:z.infer<typeof signinSchema>){
+    try{
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/token/login/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (!res.ok) {
+            const errorData = await res.json();
+            throw errorData;
+        }
+
+        const resData = await res.json();
+        const token = resData.auth_token;
+        
+        const cookieStore = await cookies();
+        cookieStore.set("token", token, {
+            maxAge: 60 * 60 * 24 * 7,
+            path: "/",
+        });
+
+        return { success: true };
+    }catch(error: any){
+        if(error?.non_field_errors) return {error: error.non_field_errors[0]}
+        if(error?.username) return {error: error.username[0]}
+        if(error?.password) return {error: error.password[0]}
+        if(error?.detail) return {error: error.detail}
+        return {error: 'Something went wrong'}
+    }
+}
+export async function signupAction(data:z.infer<typeof registerSchema>){
+    try{
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/users/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        });
+        
+        if (!res.ok) {
+            const errorData = await res.json();
+            throw errorData;
+        }
+
+        const loginRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/token/login/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({username: data.username, password: data.password})
+        });
+
+        if (!loginRes.ok) {
+            const errorData = await loginRes.json();
+            throw errorData;
+        }
+
+        const resData = await loginRes.json();
+        const token = resData.auth_token;
+        const cookieStore = await cookies();
+        cookieStore.set("token", token, {
+            maxAge: 60 * 60 * 24 * 7,
+            path: "/",
+        });
+
+        return { success: true };
+    }catch(error: any){
+        if(error?.non_field_errors) return {error: error.non_field_errors[0]}
+        if(error?.username) return {error: error.username[0]}
+        if(error?.password) return {error: error.password[0]}
+        if(error?.detail) return {error: error.detail}
+        return {error: 'Something went wrong'}
+    }
+}
+export async function getCategories(){
+    try{
+        const res = await serverFetch(`/api/categories/`);
+        const data = await res.json();
+        return data;
+    }catch(error: any){
+        if(error?.detail){
+            return {error: error.detail}
+        }
+        return {error: 'Something went wrong'}
+    }
+}
+export async function postCategory(name:string){
+    try{
+        const res = await serverFetch(`/api/categories/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({name: name})
+        });
+
+        if (!res.ok) {
+            const errorData = await res.json();
+            throw errorData;
+        }
+
+        revalidateTag('categories');
+        return { success: true };
+    }catch(error: any){
+        if(error?.detail){
+            return {error: error.detail}
+        }
+        return {error: 'Something went wrong'}
     }
 }

@@ -1,5 +1,4 @@
 'use client'
-import { getUserLastActivites, postUserTransaction, getCategories } from "@/app/actions";
 import { useState, useEffect, useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -14,70 +13,85 @@ import { Label } from "../ui/label";
 import { toast } from "sonner";
 import { Skeleton } from "../ui/skeleton";
 import api from "@/lib/api";
+import axios from "axios";
+import { postCategory, postTransaction } from "@/app/actions";
 type TransactionForm = z.infer<typeof transactionSchema>
-export default function AddTransactions() {
+export default function AddTransactions({categories}: {categories: {id: number, name: string}[]}) {
     const [profile,setProfile] = useState<{id: number, name: string} | null>(null);
     const [loading,setLoading] = useState(true);
-    useEffect(() => {
-        const fetchProfile = async () => {
-            const response = await api.get('auth/users/me/');
-            const user = response.data;
-            const profile = await api.get(`api/profiles/${user.username}/`);
-            if(profile.status === 200){
-                setProfile(profile.data);
+    useEffect(()=>{
+        const fetchData = async () => {
+            try{
+                const profileRes = await api.get('auth/users/me/').then((res) => api.get(`/api/profiles/${res.data.username}/`));
+                if(profileRes.status === 200){
+                    setProfile(profileRes.data);
+                }
+            }catch(error){
+                if(axios.isAxiosError(error)){
+                    const serverError = error.response?.data;
+                    if(serverError?.detail){
+                        toast.error(serverError.detail)
+                    }
+                }
+                if(error instanceof Error){
+                    toast.error(error.message)
+                }
+                toast.error('Something went wrong')
+            }finally{
                 setLoading(false);
             }
-        }
-        fetchProfile();
-    },[]);
+        }    
+        fetchData();
+    },[])
     const [isPending,startTransition] = useTransition()
-    const [categories,setCategories] = useState<{id: number, name: string}[]>([]);
-    const [categoriesLoading,setCategoriesLoading] = useState(true);
+    const [name,setName] = useState('')
     const {register,handleSubmit,formState:{errors}} = useForm<TransactionForm>({
         resolver: zodResolver(transactionSchema) as any,
         defaultValues:{
             category_id: 0,
-            type:undefined as any,
+            type:undefined as 'income' | 'expense' | undefined,
             amount: 0
         }
     })
-    useEffect(() => {
-    const fetchCategories = async () => {
-        const response = await getCategories();
-        if(response.success){
-            setCategories(response.data);
-            setCategoriesLoading(false);
-        }
-    }
-    fetchCategories();
-   },[]);
     const onSubmit = (data: TransactionForm)=>{
-        startTransition( async()=>{
+        startTransition( async ()=>{
             if(!profile){
                 toast.error('You need to be logged in to add a transaction');
                 return;
             }
-            const response = await postUserTransaction({
-                category_id: data.category_id,
-                type: data.type,
-                amount: data.amount,
-                profile_id:profile.id})
-            if(response.success){
-                toast.success('Transaction added successfully')
-                const update = await getUserLastActivites(profile.id);
-                if(update.success){
-                   
-                }
+            const res = await postTransaction(data, profile.id)
+            if(res?.error){
+                toast.error(res.error)
             }else{
-                toast.error(response.error)
+                toast.success('Transaction added successfully')
+            }
+
+        })
+    }
+    const handleAddCategory = (name: string)=>{
+        if(!name){
+            toast.error('Category name is required')
+            return;
+        }
+        startTransition( async ()=>{
+            const res = await postCategory(name)
+            if(res?.error){
+                toast.error(res.error)
+            }else{
+                toast.success('Category added successfully')
             }
 
         })
     }
     return (
             <Popover>
-                <PopoverTrigger disabled={categoriesLoading} asChild>
-                    <Button className="max-sm:w-full"><Plus className="size-4"/> Add Transaction</Button>
+                <PopoverTrigger disabled={loading} asChild>
+                    {
+                        loading?
+                        <Skeleton className="max-sm:w-full w-30 h-10" />
+                        :
+                        <Button className="max-sm:w-full"><Plus className="size-4"/> Add Transaction</Button>
+                    }
                 </PopoverTrigger>
                 <PopoverContent className="h-fit w-80">
                     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-1">
@@ -103,6 +117,18 @@ export default function AddTransactions() {
                                     <NativeSelectOption key={category.id} value={category.id}>{category.name}</NativeSelectOption>
                                 ))}
                             </NativeSelect>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button variant="outline" size="sm" className="w-full"><Plus className="size-4"/> Add Category</Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="h-fit w-80">
+                                        <div className="flex flex-col gap-1">
+                                            <Label htmlFor="name">Category Name</Label>
+                                            <Input type='text' placeholder='Category Name' value={name} onChange={(e) => setName(e.target.value)} />
+                                        </div>
+                                        <Button onClick={() => handleAddCategory(name)}>Add Category</Button>
+                                </PopoverContent>
+                            </Popover>
                             {errors.category_id && <p className="text-destructive">{errors.category_id.message}</p>}
                         </div>
                         <Button disabled={isPending}  type="submit">Add Transaction</Button>

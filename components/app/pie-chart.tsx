@@ -1,36 +1,30 @@
-import { Card, CardContent,CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card,CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { getUser } from "@/lib/user";
 import { format } from "@/lib/utils";
 import { ChartDisplay } from "./chart-display"
-
+import { TransactionType } from "@/lib/schemas";
+import { serverFetch } from "@/lib/server-fetch";
 export default async function ChartPieDonutText() {
-  const auth = await getUser();
+  const profileData = await getUser();
   
-  if (!auth || !auth.profileData) {
-    return (
-      <Card className="...">
-        <CardContent><p className="text-center py-10">Please login to view data</p></CardContent>
-      </Card>
-    );
+  if (typeof profileData === 'string')  {
+    return null;
   }
 
-  // 1. Fetch transactions on the server
-  const res = await fetch(`http://127.0.0.1:8000/api/transactions/${auth.profileData.id}/monthly/`, {
-    headers: { Authorization: `Token ${auth.token}` },
-    next: { revalidate: 60 } 
+  const res = await serverFetch(`/api/transactions/${profileData.id}/monthly/`, {
+    next: { tags: ['transactions'] } 
   });
   
   const data = await res.json();
   const transactions = Array.isArray(data) ? data : (data.results || []);
 
-  // 2. Perform Calculations on the server
   const totalExpenses = transactions
-    .filter((t: any) => t.type === "expense")
-    .reduce((acc: number, t: any) => acc + Number(t.amount), 0);
+    .filter((t: TransactionType) => t.type === "expense")
+    .reduce((acc: number, t: TransactionType) => acc + Number(t.amount), 0);
 
   const totalIncome = transactions
-    .filter((t: any) => t.type === "income")
-    .reduce((acc: number, t: any) => acc + Number(t.amount), 0);
+    .filter((t: TransactionType) => t.type === "income")
+    .reduce((acc: number, t: TransactionType) => acc + Number(t.amount), 0);
 
   const savings = totalIncome > totalExpenses ? totalIncome - totalExpenses : 0;
   const savingsPercentage = totalIncome > 0 ? (savings / totalIncome) * 100 : 0;
@@ -46,7 +40,6 @@ export default async function ChartPieDonutText() {
       </CardHeader>
 
       <ChartDisplay 
-        totalIncome={totalIncome}
         totalExpenses={totalExpenses}
         savings={savings}
         savingsPercentage={savingsPercentage}

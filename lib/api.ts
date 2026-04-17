@@ -2,7 +2,7 @@ import axios from 'axios';
 import { getCookie, deleteCookie } from 'cookies-next';
 
 const api = axios.create({
-    baseURL: 'http://127.0.0.1:8000/',
+    baseURL: process.env.NEXT_PUBLIC_API_URL,
 });
 
 // Interceptor to attach the Djoser token to every request

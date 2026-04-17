@@ -9,11 +9,12 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z} from "zod";
 import { useRouter } from "next/navigation";
-import { useProfile } from "@/context/Profile";
 import api from "@/lib/api";
 import { setCookie } from "cookies-next";
 import { toast } from "sonner";
 import { useTransition } from "react";
+import axios from "axios";
+import { signupAction } from "@/app/actions";
 type SignUpFormType = z.infer<typeof registerSchema>
 export function SignUpForm(){
     const [isPending,startTransition] = useTransition()
@@ -27,26 +28,18 @@ export function SignUpForm(){
         },
     })
     const router = useRouter();
-    const {refreshProfile} = useProfile();
     const onSubmit = (data: SignUpFormType ) => {
        startTransition(async()=>{
            try{
-               const response = await api.post("/auth/users/", {username: data.username,email: data.email ,password: data.password,re_password: data.re_password});
-               if(response.status === 201){
-                   const getToken = await api.post('/auth/token/login/',{username: data.username, password: data.password})
-                   const token =  getToken.data.auth_token 
-                   setCookie("token", token, {
-                       maxAge: 60 * 60 * 24 * 7,
-                       path: "/",
-                   });
-                   toast.success('Sign up successfully')
-                   await refreshProfile()
-                   router.push('/dashboard')
+               const res = await signupAction(data);
+               if(res.success){
+                   toast.success("Signed up successfully");
+                   router.push("/dashboard");
+               }else{
+                   toast.error(res.error);
                }
-           }catch(error:unknown){
-               const e = error as any;
-               const backendMessage = e?.response?.data?.detail || e?.response?.data?.username?.[0] || e?.response?.data?.email?.[0] || e?.response?.data?.password?.[0] || e?.response?.data?.re_password?.[0] || 'Registration failed';
-               toast.error(backendMessage);
+           }catch{
+               toast.error("Something went wrong");
            }
 
        })

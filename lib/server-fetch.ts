@@ -1,8 +1,8 @@
-import { getCookie } from "cookies-next";
 import {cookies} from "next/headers";
 
 export  async function serverFetch(endpoint:string,init?:RequestInit){
-    const token = await getCookie('token',{cookies})
+    const cookieStore = await cookies();
+    const token = cookieStore.get('token')?.value;
     if(!token){
         throw new Error('No token found');
     }

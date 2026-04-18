@@ -129,23 +129,49 @@ export async function signupAction(data:z.infer<typeof registerSchema>){
 
         return { success: true };
     }catch(error: any){
-        if(error?.non_field_errors) return {error: error.non_field_errors[0]}
-        if(error?.username) return {error: error.username[0]}
-        if(error?.password) return {error: error.password[0]}
-        if(error?.detail) return {error: error.detail}
+        if(error?.non_field_errors) return {success: false, error: error.non_field_errors[0]}
+        if(error?.username) return {success: false, error: error.username[0]}
+        if(error?.password) return {success: false, error: error.password[0]}
+        if(error?.detail) return {success: false, error: error.detail}
+        return { error: 'Something went wrong'}
+    }
+}
+export async function logoutAction(){
+    try{
+        const res = await serverFetch(`/auth/token/logout/`, {
+            method: "POST",
+        });
+        if (!res.ok) {
+            const errorData = await res.json();
+            throw errorData;
+        }
+        const cookieStore = await cookies();
+        cookieStore.set("token", "", {
+            maxAge: 0,
+            path: "/",
+        });
+        return { success: true };
+    }catch(error: any){
+        if(error?.detail){
+            return {error: error.detail}
+        }
         return {error: 'Something went wrong'}
     }
 }
 export async function getCategories(){
     try{
         const res = await serverFetch(`/api/categories/`);
+        if (!res.ok) {
+            const errorData = await res.json();
+            throw errorData;
+        }
         const data = await res.json();
-        return data;
+        return {success: true, data: data};
     }catch(error: any){
         if(error?.detail){
-            return {error: error.detail}
+            return {success: false, error: error.detail}
         }
-        return {error: 'Something went wrong'}
+        return {success: false, error: 'Something went wrong'}
     }
 }
 export async function postCategory(name:string){
@@ -167,8 +193,40 @@ export async function postCategory(name:string){
         return { success: true };
     }catch(error: any){
         if(error?.detail){
-            return {error: error.detail}
+            return {success: false, error: error.detail}
         }
-        return {error: 'Something went wrong'}
+        return { error: 'Something went wrong'}
+    }
+}
+
+export async function getProfile(){
+    try{
+        const res = await serverFetch(`/auth/users/me/`);
+        if (!res.ok) {
+            const errorData = await res.json();
+            throw errorData;
+        }
+        const userData = await res.json();
+        const profileRes = await serverFetch(`/api/profiles/${userData.username}/`);
+        if (!profileRes.ok) {
+            const errorData = await profileRes.json();
+            throw errorData;
+        }
+        const data = await profileRes.json();
+        return {
+            success: true,
+            data: data
+        };
+    }catch(error: any){
+        if(error?.detail){
+            return {error: error.detail}
+        }else if(error?.amount){
+            return {success: false, error: error.amount[0]}
+        }else if(error?.type){
+            return {success: false, error: error.type[0]}
+        }else if(error?.category_id){
+            return {success: false, error: error.category_id[0]}
+        }
+        return { success: false, error: 'Something went wrong'}
     }
 }

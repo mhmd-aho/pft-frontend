@@ -1,8 +1,8 @@
 import {cookies} from "next/headers";
-import { getCookie } from "cookies-next";
 import { cache } from "react";
 export const getUser = cache(async () => {
-    const token = await getCookie("token",{ cookies });
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
     if(!token){
         return 'the user is not logged in';
     }

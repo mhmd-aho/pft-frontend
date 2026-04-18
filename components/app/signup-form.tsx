@@ -9,11 +9,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z} from "zod";
 import { useRouter } from "next/navigation";
-import api from "@/lib/api";
-import { setCookie } from "cookies-next";
 import { toast } from "sonner";
 import { useTransition } from "react";
-import axios from "axios";
 import { signupAction } from "@/app/actions";
 type SignUpFormType = z.infer<typeof registerSchema>
 export function SignUpForm(){

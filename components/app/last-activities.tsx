@@ -3,7 +3,7 @@ import { CategoryType, TransactionType } from "@/lib/schemas";
 import { getUser } from "@/lib/user";
 import AddTransactions from "./addTransactions";
 import { serverFetch } from "@/lib/server-fetch";
-import TransactionsDisplay from "./transatcions-display";
+import TransactionsDisplay from "./transactions-display";
 export default async function LastActivities() {
 const profileData = await getUser();
 if(typeof profileData === 'string'){
@@ -33,8 +33,8 @@ return (
                     <CardHeader>
                         <CardTitle className="sm:text-3xl text-xl">Transactions</CardTitle>
                     </CardHeader>
-                    <CardContent className="flex-1 min-h-0 flex flex-col gap-3 max-sm:gap-1 max-sm:py-1">
-                        <h3 className="sm:text-xl text-lg">Last 10 days activities ({transactions.length})</h3>
+                    <CardContent className="flex-1 min-h-0 flex flex-col gap-3 max-sm:gap-1 max-sm:py-1 px-0">
+                        <h3 className="sm:text-xl text-lg pl-5">Last 10 days activities ({transactions.length})</h3>
                         <TransactionsDisplay transactions={transactions} error={error} />
                     </CardContent>
                     <CardFooter className="flex justify-end shrink-0">

@@ -11,35 +11,22 @@ import { Input } from "../ui/input";
 import { NativeSelect, NativeSelectOption } from "../ui/native-select";
 import { Label } from "../ui/label";
 import { toast } from "sonner";
-import { Skeleton } from "../ui/skeleton";
-import api from "@/lib/api";
-import axios from "axios";
-import { postCategory, postTransaction } from "@/app/actions";
+import { Skeleton } from "../ui/skeleton"
+import { postCategory, postTransaction, getProfile } from "@/app/actions";
 type TransactionForm = z.infer<typeof transactionSchema>
 export default function AddTransactions({categories}: {categories: {id: number, name: string}[]}) {
     const [profile,setProfile] = useState<{id: number, name: string} | null>(null);
     const [loading,setLoading] = useState(true);
     useEffect(()=>{
         const fetchData = async () => {
-            try{
-                const profileRes = await api.get('auth/users/me/').then((res) => api.get(`/api/profiles/${res.data.username}/`));
-                if(profileRes.status === 200){
+                const profileRes = await getProfile();
+                if(profileRes.success){
                     setProfile(profileRes.data);
                 }
-            }catch(error){
-                if(axios.isAxiosError(error)){
-                    const serverError = error.response?.data;
-                    if(serverError?.detail){
-                        toast.error(serverError.detail)
-                    }
+                else{
+                    toast.error(profileRes.error)
                 }
-                if(error instanceof Error){
-                    toast.error(error.message)
-                }
-                toast.error('Something went wrong')
-            }finally{
                 setLoading(false);
-            }
         }    
         fetchData();
     },[])
@@ -131,9 +118,9 @@ export default function AddTransactions({categories}: {categories: {id: number, 
                             </Popover>
                             {errors.category_id && <p className="text-destructive">{errors.category_id.message}</p>}
                         </div>
-                        <Button disabled={isPending}  type="submit">Add Transaction</Button>
+                        <Button type="submit" disabled={isPending}>Add Transaction</Button>
                     </form>
                 </PopoverContent>
             </Popover>
-    );
+    )
 }

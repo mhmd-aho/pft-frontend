@@ -3,17 +3,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import api from "@/lib/api";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
-import { setCookie } from "cookies-next";
 import {useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signinSchema } from "@/lib/schemas";
 import {z} from "zod";
 import { useTransition } from "react";
-import axios from "axios";
 import { signinAction } from "@/app/actions";
 type SignInFormType = z.infer<typeof signinSchema>
 export function SignInForm() {

@@ -1,10 +1,12 @@
-import { Card,CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card,CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { getUser } from "@/lib/user";
 import { format } from "@/lib/utils";
 import { ChartDisplay } from "./chart-display"
 import { TransactionType } from "@/lib/schemas";
 import { serverFetch } from "@/lib/server-fetch";
-export default async function ChartPieDonutText() {
+import { Button } from "../ui/button";
+import Link from "next/link";
+export default async function Savings() {
   const profileData = await getUser();
   
   if (typeof profileData === 'string')  {
@@ -45,6 +47,13 @@ export default async function ChartPieDonutText() {
         savingsPercentage={savingsPercentage}
         formattedTotalIncome={formattedTotalIncome}
       />
+      <CardFooter className="flex justify-end shrink-0">
+        <Button  className="max-sm:w-full" asChild>
+          <Link href="/dashboard/budget">
+            View all categories
+          </Link>
+          </Button>
+      </CardFooter>
     </Card>
   );
 }

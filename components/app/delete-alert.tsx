@@ -1,14 +1,14 @@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../ui/alert-dialog";
 import { useTransition } from "react";
-import { deleteTransaction } from "@/app/actions";
+import { deleteTransaction, deleteBudget } from "@/app/actions";
 import { toast } from "sonner";
 import { Loader2, Trash } from "lucide-react";
-export default function DeleteAlert({id}: {id: number}) {
+export default function DeleteAlert({id,type}: {id: number,type: 'transaction' | 'budget'}) {
     const [isPending,startTransition] = useTransition();
     const handleDelete = () => {
 
         startTransition(async () => {
-            const res = await deleteTransaction(id);
+            const res = type === 'transaction'? await deleteTransaction(id) : await deleteBudget(id);
             if(res?.error){
                 toast.error(res.error);
             }else{
@@ -25,7 +25,7 @@ export default function DeleteAlert({id}: {id: number}) {
                 <AlertDialogHeader>
                     <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete this transaction and remove it from the server.
+                        This action cannot be undone. This will permanently delete this {type} and remove it from the server.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

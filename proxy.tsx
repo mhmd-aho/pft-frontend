@@ -16,11 +16,12 @@ export default async function proxy(request:NextRequest){
         return NextResponse.next();
     }
     catch{
-        return NextResponse.redirect(new URL('auth/signin',request.url))
+        return NextResponse.redirect(new URL('/auth/signin',request.url))
     }
 }
 export const config = {
     matcher:[
         "/dashboard",
+        "/dashboard/budget",
     ]
 }

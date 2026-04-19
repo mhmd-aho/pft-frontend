@@ -4,7 +4,7 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import DeleteAlert from "./delete-alert";
 import { useRef } from "react";
-export default function TransactionsDisplay({transactions,error}:{transactions:TransactionType[],error:string | null}) {
+export default function TransactionsDisplay({transactions,error,profileId}:{transactions:TransactionType[],error:string | null,profileId:number}) {
    const option:Intl.DateTimeFormatOptions = {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}
    const container = useRef(null);
    useGSAP(() => {
@@ -26,7 +26,7 @@ export default function TransactionsDisplay({transactions,error}:{transactions:T
                             transactions.map((transaction) => (
                                 <div key={transaction.id} className="transaction flex items-center justify-between px-2 relative group hover:bg-accent transition-colors duration-300 pl-5">
                                     <div  className="absolute inset-0 max-lg:w-full max-lg:h-full lg:top-1/2 lg:-translate-y-1/2 lg:left-2  lg:opacity-0 lg:group-hover:opacity-100 max-lg:active:bg-white/10 transition-all duration-300" >
-                                        <DeleteAlert id={transaction.id} />
+                                        <DeleteAlert id={transaction.id} transactionProfileId={transaction.profile.id} profileId={profile.id} type="transaction" />
                                     </div>
                                     <div  className="group-hover:pl-5 transition-all duration-300" >
                                         <p className="sm:text-lg text-md">{transaction.category.name}</p>

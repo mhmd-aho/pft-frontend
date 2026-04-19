@@ -12,13 +12,15 @@ import { NativeSelect, NativeSelectOption } from "../ui/native-select";
 import { Label } from "../ui/label";
 import { toast } from "sonner";
 import { Skeleton } from "../ui/skeleton"
-import { postCategory, postTransaction, getProfile } from "@/app/actions";
+import { postTransaction, getProfile } from "@/app/actions";
+import AddCategory from "./add-category";
 type TransactionForm = z.infer<typeof transactionSchema>
 export default function AddTransactions({categories}: {categories: {id: number, name: string}[]}) {
     const [profile,setProfile] = useState<{id: number, name: string} | null>(null);
-    const [loading,setLoading] = useState(true);
+    const [profilePending,startProfileTransition] = useTransition();
     useEffect(()=>{
         const fetchData = async () => {
+            startProfileTransition(async () => {
                 const profileRes = await getProfile();
                 if(profileRes.success){
                     setProfile(profileRes.data);
@@ -26,12 +28,11 @@ export default function AddTransactions({categories}: {categories: {id: number, 
                 else{
                     toast.error(profileRes.error)
                 }
-                setLoading(false);
+            })
         }    
         fetchData();
     },[])
     const [isPending,startTransition] = useTransition()
-    const [name,setName] = useState('')
     const {register,handleSubmit,formState:{errors}} = useForm<TransactionForm>({
         resolver: zodResolver(transactionSchema) as any,
         defaultValues:{
@@ -55,26 +56,12 @@ export default function AddTransactions({categories}: {categories: {id: number, 
 
         })
     }
-    const handleAddCategory = (name: string)=>{
-        if(!name){
-            toast.error('Category name is required')
-            return;
-        }
-        startTransition( async ()=>{
-            const res = await postCategory(name)
-            if(res?.error){
-                toast.error(res.error)
-            }else{
-                toast.success('Category added successfully')
-            }
 
-        })
-    }
     return (
             <Popover>
-                <PopoverTrigger disabled={loading} asChild>
+                <PopoverTrigger disabled={profilePending} asChild>
                     {
-                        loading?
+                        profilePending?
                         <Skeleton className="max-sm:w-full w-30 h-10" />
                         :
                         <Button className="max-sm:w-full"><Plus className="size-4"/> Add Transaction</Button>
@@ -104,18 +91,7 @@ export default function AddTransactions({categories}: {categories: {id: number, 
                                     <NativeSelectOption key={category.id} value={category.id}>{category.name}</NativeSelectOption>
                                 ))}
                             </NativeSelect>
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                    <Button variant="outline" size="sm" className="w-full"><Plus className="size-4"/> Add Category</Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="h-fit w-80">
-                                        <div className="flex flex-col gap-1">
-                                            <Label htmlFor="name">Category Name</Label>
-                                            <Input type='text' placeholder='Category Name' value={name} onChange={(e) => setName(e.target.value)} />
-                                        </div>
-                                        <Button onClick={() => handleAddCategory(name)}>Add Category</Button>
-                                </PopoverContent>
-                            </Popover>
+                            <AddCategory />
                             {errors.category_id && <p className="text-destructive">{errors.category_id.message}</p>}
                         </div>
                         <Button type="submit" disabled={isPending}>Add Transaction</Button>

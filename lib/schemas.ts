@@ -33,7 +33,12 @@ type TransactionPostType = {
     type: 'income' | 'expense';
     category_id: number;
 }
-
+type BudgetType = {
+    id: number;
+    profile: ProfileType;
+    amount: number;
+    category: CategoryType;
+}
 
 
 const transactionSchema = z.object({
@@ -56,6 +61,9 @@ const registerSchema = z.object({
     message: "Password don't match",
     path: ["re_password"]
 });
-
-export { transactionSchema, signinSchema, registerSchema };
-export type { UserType, ProfileType, CategoryType, TransactionType, TransactionPostType };
+const budgetSchema = z.object({
+    amount: z.coerce.number().gt(0, 'Amount must be greater than 0'),
+    category_id: z.coerce.number().gt(0, 'Category is required'),
+});
+export { transactionSchema, signinSchema, registerSchema, budgetSchema };
+export type { UserType, ProfileType, CategoryType, TransactionType, TransactionPostType,BudgetType };

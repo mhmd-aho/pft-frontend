@@ -1,7 +1,7 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../ui/card";
 import { CategoryType, TransactionType } from "@/lib/schemas";
 import { getUser } from "@/lib/user";
-import AddTransactions from "./addTransactions";
+import AddTransactions from "./add-transactions";
 import { serverFetch } from "@/lib/server-fetch";
 import TransactionsDisplay from "./transactions-display";
 export default async function LastActivities() {
@@ -35,7 +35,7 @@ return (
                     </CardHeader>
                     <CardContent className="flex-1 min-h-0 flex flex-col gap-3 max-sm:gap-1 max-sm:py-1 px-0">
                         <h3 className="sm:text-xl text-lg pl-5">Last 10 days activities ({transactions.length})</h3>
-                        <TransactionsDisplay transactions={transactions} error={error} />
+                        <TransactionsDisplay transactions={transactions}  error={error} />
                     </CardContent>
                     <CardFooter className="flex justify-end shrink-0">
                         <AddTransactions categories={categories} />

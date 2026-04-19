@@ -3,7 +3,7 @@ import {z} from "zod";
 import { revalidateTag } from "next/cache";
 import {transactionSchema} from "@/lib/schemas";
 import { serverFetch } from "@/lib/server-fetch";
-import { signinSchema, registerSchema } from "@/lib/schemas";
+import { signinSchema, registerSchema, budgetSchema } from "@/lib/schemas";
 import { cookies } from "next/headers";
 export async function postTransaction(data:z.infer<typeof transactionSchema>, profile_id: number) {
     try{
@@ -230,3 +230,86 @@ export async function getProfile(){
         return { success: false, error: 'Something went wrong'}
     }
 }
+export async function postBudget(data:z.infer<typeof budgetSchema>, profile_id: number) {
+    try{
+        const res = await serverFetch(`/api/budgets/${profile_id}/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (!res.ok) {
+            const errorData = await res.json();
+            throw errorData;
+        }
+
+        revalidateTag('budgets');
+        return { success: true };
+    }catch(error: any){
+        if(error?.detail){
+            return {error: error.detail}
+        }
+        if(error?.amount){
+            return {error: error.amount[0]}
+        }
+        if(error?.category_id){
+            return {error: error.category_id[0]}
+        }
+        return {error: 'Something went wrong'}
+    }
+}
+
+export async function patchBudget(data:z.infer<typeof budgetSchema>, budget_id: number) {
+    try{
+        const res = await serverFetch(`/api/budgets/${budget_id}/`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (!res.ok) {
+            const errorData = await res.json();
+            throw errorData;
+        }
+
+        revalidateTag('budgets');
+        return { success: true };
+    }catch(error: any){
+        if(error?.detail){
+            return {error: error.detail}
+        }
+        if(error?.amount){
+            return {error: error.amount[0]}
+        }
+        if(error?.category_id){
+            return {error: error.category_id[0]}
+        }
+        return {error: 'Something went wrong'}
+    }
+}
+
+export async function deleteBudget(budget_id: number) {
+    try{
+        const res = await serverFetch(`/api/budgets/${budget_id}/`, {
+            method: "DELETE",
+        });
+
+        if (!res.ok) {
+            const errorData = await res.json();
+            throw errorData;
+        }
+
+        revalidateTag('budgets');
+        return { success: true };
+    }catch(error: any){
+        if(error?.detail){
+            return {error: error.detail}
+        }
+        return {error: 'Something went wrong'}
+    }
+}
+        

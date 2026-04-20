@@ -7,20 +7,21 @@ export default async function BudgetsDisplay({Expenses,categories,profile}: {Exp
     const res = await serverFetch(`/api/budgets/${profile.id}/`,{next:{tags:['budgets']}});
     const budgetsData = await res.json();
     const budgets: BudgetType[] = budgetsData.results;
+    const budgetsToShow: BudgetType[] = budgets.slice(0,2)
     return (
         <div className="col-span-6 row-start-2 row-end-6 flex flex-col gap-1">
             <h3 className="sm:text-lg text-sm">Categories breakdown</h3>
-            <div className="flex-1 grid grid-cols-3 grid-rows-3 gap-2"> 
+            <div className="flex-1 grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] overflow-y-auto gap-3"> 
                     {
-                        budgets.map((budget:BudgetType) => {
+                        budgetsToShow.map((budget:BudgetType) => {
                             const totalExpenses = Expenses.filter((t: TransactionType) => t.category.id === budget.category.id).reduce((acc: number, t: TransactionType) => acc + Number(t.amount), 0);
                             return (
                                 <BudgetCard key={budget.id} budget={budget} totalExpenses={totalExpenses} categories={categories}/>
                             )
                         })
                     }
-                    <AddBudget categories={categories}/>
-                </div>
+                    <AddBudget styles='card'/>
+            </div>
         </div>
     );
 }

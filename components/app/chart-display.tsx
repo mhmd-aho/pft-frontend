@@ -6,6 +6,9 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } f
 import { TrendingUp } from "lucide-react"
 import { Progress } from "../ui/progress"
 import { Field, FieldLabel } from "../ui/field"
+import { BudgetType, TransactionType } from "@/lib/schemas"
+import { format } from "@/lib/utils";
+import AddBudget from "./add-budget"
 
 const chartConfig = {
   Expenses: { label: "Expenses" },
@@ -13,13 +16,17 @@ const chartConfig = {
 } satisfies ChartConfig
 
 interface ChartDisplayProps {
-  totalExpenses: number;
-  savings: number;
-  savingsPercentage: number;
-  formattedTotalIncome: string;
+  expenses : TransactionType[],
+  incomes: TransactionType[],
+  budgets: BudgetType[]
 }
 
-export function ChartDisplay({ totalExpenses, savings, savingsPercentage, formattedTotalIncome }: ChartDisplayProps) {
+export function ChartDisplay({ expenses,incomes,budgets}: ChartDisplayProps) {
+  const totalExpenses =  expenses.reduce((acc:number, t:TransactionType)=>acc+Number(t.amount),0)
+  const totalIncome = incomes.reduce((acc: number, t: TransactionType) => acc + Number(t.amount), 0);
+  const savings = totalIncome > totalExpenses ? totalIncome - totalExpenses : 0;
+  const savingsPercentage = totalIncome > 0 ? (savings / totalIncome) * 100 : 0;
+  const formattedTotalIncome = format.format(totalIncome);
   const chartData = [
     { label: "Expenses", value: totalExpenses, fill: "var(--chart-1)" },
     { label: "Savings", value: savings, fill: "var(--chart-5)" }
@@ -37,7 +44,7 @@ export function ChartDisplay({ totalExpenses, savings, savingsPercentage, format
                     if (viewBox && "cx" in viewBox && "cy" in viewBox) {
                       return (
                         <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle">
-                          <tspan x={viewBox.cx} y={viewBox.cy} className="fill-foreground text-2xl font-bold">
+                          <tspan x={viewBox.cx} y={viewBox.cy} className="fill-foreground text-lg font-bold">
                             {formattedTotalIncome}
                           </tspan>
                           <tspan x={viewBox.cx} y={(viewBox.cy || 0) + 24} className="fill-muted-foreground">
@@ -55,13 +62,26 @@ export function ChartDisplay({ totalExpenses, savings, savingsPercentage, format
             You are saving {savingsPercentage.toFixed(2)}% from your income <TrendingUp className="h-4 w-4" />
           </div>
         </div>
-        <Field>
-          <FieldLabel>
-            <p>Rent</p>
-            <p>500$ of 1000$ budget</p>
-          </FieldLabel>
-          <Progress value={50} />
-        </Field>
+        <div className="w-full flex flex-col gap-3">
+          {
+            budgets.length >0 &&
+            budgets.map((budget)=>{
+               const budgetExpenses = expenses.filter(t=>t.category.name=== budget.category.name).reduce(((acc:number,t:TransactionType)=>acc+t.amount),0)
+               const formatetExpenses = format.format(budgetExpenses)
+               const formatetBudgetAmount = format.format(budget.amount)
+               const progress = (budgetExpenses/budget.amount)*100;
+               return(
+                  <Field key={budget.id}>
+                    <FieldLabel>
+                      <p>{budget.category.name}</p>
+                      <p>{formatetExpenses} / {formatetBudgetAmount}</p>
+                    </FieldLabel>
+                    <Progress value={progress} />
+                  </Field>
+               )})
+          }
+          <AddBudget styles="dashboard" />
+        </div>
       </CardContent>
   )
 }

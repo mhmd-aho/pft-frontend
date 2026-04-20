@@ -3,6 +3,7 @@ import { useTransition } from "react";
 import { deleteTransaction, deleteBudget } from "@/app/actions";
 import { toast } from "sonner";
 import { Loader2, Trash } from "lucide-react";
+import { Button } from "../ui/button";
 export default function DeleteAlert({id,type}: {id: number,type: 'transaction' | 'budget'}) {
     const [isPending,startTransition] = useTransition();
     const handleDelete = () => {
@@ -18,8 +19,13 @@ export default function DeleteAlert({id,type}: {id: number,type: 'transaction' |
     }
     return (
         <AlertDialog>
-            <AlertDialogTrigger disabled={isPending} className="max-lg:w-full max-lg:h-full">
-                {isPending ? <Loader2 className="size-4 animate-spin max-lg:hidden" /> : <Trash className="text-red-500 size-4 max-lg:hidden" />}
+            <AlertDialogTrigger asChild disabled={isPending} className="max-lg:w-full max-lg:h-full">
+                {
+                    type === 'transaction'?
+                        isPending ? <Loader2 className="size-4 animate-spin max-lg:hidden" /> : <Trash className="text-red-500 size-4 max-lg:hidden" />
+                        :
+                        isPending? <Button variant='destructive' size='lg'>deleting <Loader2 className="size-4 animation-spin"/></Button> : <Button variant='destructive' size='lg'>delete</Button>
+                }
             </AlertDialogTrigger>
             <AlertDialogContent>
                 <AlertDialogHeader>

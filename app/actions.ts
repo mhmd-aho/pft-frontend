@@ -166,7 +166,7 @@ export async function getCategories(){
             throw errorData;
         }
         const data = await res.json();
-        return {success: true, data: data};
+        return {success: true, data: data.results};
     }catch(error: any){
         if(error?.detail){
             return {success: false, error: error.detail}

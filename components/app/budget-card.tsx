@@ -21,13 +21,17 @@ export function BudgetCard({budget,totalExpenses,categories}: {budget: BudgetTyp
         amount: budget.amount
     })
     const handleEdit = async () => {
+        if(data.category_id === budget.category.id || data.amount === budget.amount){
+            setIsEditing(false)
+            return
+        }
             const res = await patchBudget(data,budget.id);
             if(res?.error){
                 toast.error(res.error)
             }
             else{
                 toast.success('Budget updated successfully');
-                setIsEditing(!isEditing);
+                setIsEditing(false);
             }
     }
     return (
@@ -43,7 +47,7 @@ export function BudgetCard({budget,totalExpenses,categories}: {budget: BudgetTyp
                                     ))}
                                 </NativeSelect>
                             ) : (
-                                <CardTitle>{budget.category.name}</CardTitle>
+                                <CardTitle className="text-lg">{budget.category.name}</CardTitle>
                             )}
                         </CardHeader>
                         <CardContent>

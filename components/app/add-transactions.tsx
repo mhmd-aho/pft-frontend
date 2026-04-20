@@ -59,7 +59,7 @@ export default function AddTransactions({categories}: {categories: {id: number, 
 
     return (
             <Popover>
-                <PopoverTrigger disabled={profilePending} asChild>
+                <PopoverTrigger disabled={profilePending} className="cursor-pointer" asChild>
                     {
                         profilePending?
                         <Skeleton className="max-sm:w-full w-30 h-10" />

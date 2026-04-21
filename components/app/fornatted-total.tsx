@@ -21,7 +21,7 @@ export default function FormattedTotal({total}: {total: number}) {
     }, {scope:container, dependencies:[total]});
     return (
         <CardContent ref={container}>
-            <p ref={para} className="sm:text-xl text-lg">$0.00</p>
+            <p ref={para} className="sm:text-xl text-lg">0.00 $</p>
         </CardContent>
     );
 }

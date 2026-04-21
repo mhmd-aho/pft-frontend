@@ -17,11 +17,11 @@ export function BudgetCard({budget,totalExpenses,categories}: {budget: BudgetTyp
     const formattedBudgetAmount = format.format(budget.amount);
     const progress = (totalExpenses/budget.amount)*100;
     const [data,setData] = useState({
-        category_id: budget.category.id,
+        category_id: budget.category.id, 
         amount: budget.amount
     })
     const handleEdit = async () => {
-        if(data.category_id === budget.category.id || data.amount === budget.amount){
+        if(data.category_id === budget.category.id && data.amount === budget.amount){
             setIsEditing(false)
             return
         }

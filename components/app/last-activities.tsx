@@ -13,7 +13,7 @@ let transactions:TransactionType[] = [];
 let categories:CategoryType[] = [];
 let error = ''
 try{
-    const res =  await serverFetch(`/api/transactions/${profileData.id}/last-ten-days/`,{
+    const res =  await serverFetch(`/api/transactions/profile/${profileData.id}/last-ten-days/`,{
      next: { tags: ['transactions'] } 
     })
     const resJson = await res.json();
@@ -24,8 +24,8 @@ try{
     const categoriesResJson = await categoriesRes.json();
     categories = categoriesResJson.results;
 }
-catch{
-    error = 'Something is wrong'
+catch(e){
+    error = e.details || 'Something went wrong'
 }
 
 return (
@@ -35,7 +35,7 @@ return (
                     </CardHeader>
                     <CardContent className="flex-1 min-h-0 flex flex-col gap-3 max-sm:gap-1 max-sm:py-1 px-0">
                         <h3 className="sm:text-xl text-lg pl-5">Last 10 days activities ({transactions.length})</h3>
-                        <TransactionsDisplay transactions={transactions}  error={error} />
+                        <TransactionsDisplay transactions={transactions} error={error} />
                     </CardContent>
                     <CardFooter className="flex justify-end shrink-0">
                         <AddTransactions categories={categories} />

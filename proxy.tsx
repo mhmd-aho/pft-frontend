@@ -2,7 +2,7 @@ import { NextResponse,NextRequest } from "next/server";
 export default async function proxy(request:NextRequest){
     const token = request.cookies.get('token')?.value;
     if(!token){
-        return NextResponse.redirect(new URL('auth/signin',request.url))
+        return NextResponse.redirect(new URL('/auth/signin',request.url))
     }
     try{
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/users/me/`,{

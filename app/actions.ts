@@ -5,57 +5,19 @@ import {transactionSchema} from "@/lib/schemas";
 import { serverFetch } from "@/lib/server-fetch";
 import { signinSchema, registerSchema, budgetSchema } from "@/lib/schemas";
 import { cookies } from "next/headers";
-export async function postTransaction(data:z.infer<typeof transactionSchema>, profile_id: number) {
+export async function getProfile(){
     try{
-        const res = await serverFetch(`/api/transactions/${profile_id}/`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({...data, profile_id})
-        });
-
-        if (!res.ok) {
-            const errorData = await res.json();
-            throw errorData;
-        }
-
-        revalidateTag('transactions');
-        return { success: true };
+        const userRes = await serverFetch(`/auth/users/me/`);
+        const userData = await userRes.json();
+        const profileRes = await serverFetch(`/api/profiles/${userData.username}/`);
+        if (!profileRes.ok) throw await profileRes.json();
+        const data = await profileRes.json();
+        return {
+            success: true,
+            data: data
+        };
     }catch(error: any){
-        if(error?.detail){
-            return {error: error.detail}
-        }
-        if(error?.amount){
-            return {error: error.amount[0]}
-        }
-        if(error?.type){
-            return {error: error.type[0]}
-        }
-        if(error?.category_id){
-            return {error: error.category_id[0]}
-        }
-        return {error: 'Something went wrong'}
-    }
-}
-export async function deleteTransaction(transaction_id: number) {
-    try{
-        const res = await serverFetch(`/api/transactions/${transaction_id}/`, {
-            method: "DELETE",
-        });
-
-        if (!res.ok) {
-            const errorData = await res.json();
-            throw errorData;
-        }
-
-        revalidateTag('transactions');
-        return { success: true };
-    }catch(error: any){
-        if(error?.detail){
-            return {error: error.detail}
-        }
-        return {error: 'Something went wrong'}
+        return { success: false, error: error.detail || 'Something went wrong'}
     }
 }
 export async function signinAction(data:z.infer<typeof signinSchema>){
@@ -158,6 +120,59 @@ export async function logoutAction(){
         return {error: 'Something went wrong'}
     }
 }
+export async function postTransaction(data:z.infer<typeof transactionSchema>, profile_id: number) {
+    try{
+        const res = await serverFetch(`/api/transactions/profile/${profile_id}/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({...data, profile_id})
+        });
+
+        if (!res.ok) {
+            const errorData = await res.json();
+            throw errorData;
+        }
+
+        revalidateTag('transactions');
+        return { success: true };
+    }catch(error: any){
+        if(error?.detail){
+            return {error: error.detail}
+        }
+        if(error?.amount){
+            return {error: error.amount[0]}
+        }
+        if(error?.type){
+            return {error: error.type[0]}
+        }
+        if(error?.category_id){
+            return {error: error.category_id[0]}
+        }
+        return {error: 'Something went wrong'}
+    }
+}
+export async function deleteTransaction(transaction_id: number) {
+    try{
+        const res = await serverFetch(`/api/transactions/${transaction_id}`, {
+            method: "DELETE",
+        });
+
+        if (!res.ok) {
+            const errorData = await res.json();
+            throw errorData;
+        }
+
+        revalidateTag('transactions');
+        return { success: true };
+    }catch(error: any){
+        if(error?.detail){
+            return {error: error.detail}
+        }
+        return {error: 'Something went wrong'}
+    }
+}
 export async function getCategories(){
     try{
         const res = await serverFetch(`/api/categories/`);
@@ -199,40 +214,9 @@ export async function postCategory(name:string){
     }
 }
 
-export async function getProfile(){
+export async function postBudget(data:z.infer<typeof budgetSchema>) {
     try{
-        const res = await serverFetch(`/auth/users/me/`);
-        if (!res.ok) {
-            const errorData = await res.json();
-            throw errorData;
-        }
-        const userData = await res.json();
-        const profileRes = await serverFetch(`/api/profiles/${userData.username}/`);
-        if (!profileRes.ok) {
-            const errorData = await profileRes.json();
-            throw errorData;
-        }
-        const data = await profileRes.json();
-        return {
-            success: true,
-            data: data
-        };
-    }catch(error: any){
-        if(error?.detail){
-            return {error: error.detail}
-        }else if(error?.amount){
-            return {success: false, error: error.amount[0]}
-        }else if(error?.type){
-            return {success: false, error: error.type[0]}
-        }else if(error?.category_id){
-            return {success: false, error: error.category_id[0]}
-        }
-        return { success: false, error: 'Something went wrong'}
-    }
-}
-export async function postBudget(data:z.infer<typeof budgetSchema>, profile_id: number) {
-    try{
-        const res = await serverFetch(`/api/budgets/${profile_id}/`, {
+        const res = await serverFetch(`/api/budgets/`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

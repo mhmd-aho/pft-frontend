@@ -8,7 +8,6 @@ import { Progress } from "../ui/progress"
 import { Field, FieldLabel } from "../ui/field"
 import { BudgetType, TransactionType } from "@/lib/schemas"
 import { format } from "@/lib/utils";
-import AddBudget from "./add-budget"
 
 const chartConfig = {
   Expenses: { label: "Expenses" },
@@ -31,7 +30,12 @@ export function ChartDisplay({ expenses,incomes,budgets}: ChartDisplayProps) {
     { label: "Expenses", value: totalExpenses, fill: "var(--chart-1)" },
     { label: "Savings", value: savings, fill: "var(--chart-5)" }
   ]
-
+  let budgetsToShow: BudgetType[] = [];
+  if(budgets.length > 2){
+    budgetsToShow = budgets.slice(0,2)
+  }else{
+    budgetsToShow = budgets
+  }
   return (
       <CardContent className="flex-1 pb-0 flex flex-col gap-10 items-center">
         <div className="flex flex-col items-center">
@@ -64,8 +68,8 @@ export function ChartDisplay({ expenses,incomes,budgets}: ChartDisplayProps) {
         </div>
         <div className="w-full flex flex-col gap-3">
           {
-            budgets.length >0 &&
-            budgets.map((budget)=>{
+            budgetsToShow.length >0 &&
+            budgetsToShow.map((budget)=>{
                const budgetExpenses = expenses.filter(t=>t.category.name=== budget.category.name).reduce(((acc:number,t:TransactionType)=>acc+t.amount),0)
                const formatetExpenses = format.format(budgetExpenses)
                const formatetBudgetAmount = format.format(budget.amount)
@@ -80,7 +84,6 @@ export function ChartDisplay({ expenses,incomes,budgets}: ChartDisplayProps) {
                   </Field>
                )})
           }
-          <AddBudget styles="dashboard" />
         </div>
       </CardContent>
   )

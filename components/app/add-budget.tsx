@@ -15,8 +15,7 @@ import { postBudget, getProfile, getCategories } from "@/app/actions";
 import { Skeleton } from "../ui/skeleton";
 import AddCategory from "./add-category";
 type BudgetForm = z.infer<typeof budgetSchema>;
-type Styles = 'dashboard' | 'card';
-export default function AddBudget({styles}: {styles: Styles}) {
+export default function AddBudget() {
     const [profile,setProfile] = useState<{id: number, name: string} | null>(null);
     const [categories,setCategories] = useState<CategoryType[]>([]);
     const [profilePending,startProfileTransition] = useTransition();
@@ -28,10 +27,6 @@ export default function AddBudget({styles}: {styles: Styles}) {
                 amount: 0
             }
         })
-    const className={
-        dashboard: 'flex justify-center items-center w-full h-7 rounded-md border mt-2 cursor-pointer ',
-        card: 'col-span-1 row-span-1 h-full flex flex-col items-center justify-center border-muted shadow border  rounded-md cursor-pointer'
-    }
     useEffect(()=>{
         const fetchData = async () => {
             startProfileTransition(async () => {
@@ -69,14 +64,14 @@ export default function AddBudget({styles}: {styles: Styles}) {
     }
     return (
         <Popover>
-            <PopoverTrigger disabled={profilePending} className={className[styles]}>
+            <PopoverTrigger disabled={profilePending} className='col-span-1 row-span-1 h-full flex flex-col items-center justify-center border-muted shadow border  rounded-md cursor-pointer'>
                 {
                     profilePending?
                     <Skeleton className="h-full w-full" />
                     :
                     <>
-                        <Plus className={styles === 'dashboard'? "size-4 mr-2" : "sm:size-20 size-10"}/>
-                        <p className={styles === 'dashboard'? "text-sm" : "sm:text-lg text-sm"}>Add Budget</p>
+                        <Plus className="sm:size-20 size-10"/>
+                        <p className="sm:text-lg text-sm">Add Budget</p>
                     </>
                 }
             </PopoverTrigger>

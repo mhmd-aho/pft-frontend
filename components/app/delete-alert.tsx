@@ -13,13 +13,13 @@ export default function DeleteAlert({id,type}: {id: number,type: 'transaction' |
             if(res?.error){
                 toast.error(res.error);
             }else{
-                toast.success("Transaction deleted successfully");
+                toast.success(`${type} deleted successfully`);
             }
         });
     }
     return (
         <AlertDialog>
-            <AlertDialogTrigger asChild disabled={isPending} className="max-lg:w-full max-lg:h-full">
+            <AlertDialogTrigger asChild disabled={isPending} className={type === 'transaction' ? "max-lg:w-full max-lg:h-full" : ""}>
                 {
                     type === 'transaction'?
                         isPending ? <Loader2 className="size-4 animate-spin max-lg:hidden" /> : <Trash className="text-red-500 size-4 max-lg:hidden" />

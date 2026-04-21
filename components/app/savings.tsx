@@ -13,14 +13,14 @@ export default async function Savings() {
     return null;
   }
 
-  const transactionRes = await serverFetch(`/api/transactions/${profileData.id}/monthly/`, {
+  const transactionRes = await serverFetch(`/api/transactions/profile/${profileData.id}/monthly/`, {
     next: { tags: ['transactions'] } 
   });
   const transactionsData = await transactionRes.json();
-  const transactions:TransactionType[] = transactionsData.results ;
-  const budgetRes = await serverFetch(`/api/budgets/${profileData.id}/`,{next:{tags:['budgets']}});
-    const budgetsData = await budgetRes.json();
-    const budgets: BudgetType[] = budgetsData.results;
+  const transactions:TransactionType[] = transactionsData.results;
+  const budgetRes = await serverFetch(`/api/budgets/`,{next:{tags:['budgets']}});
+  const budgetsData = await budgetRes.json();
+  const budgets:BudgetType[] = budgetsData.results;
   const expenses = transactions.filter((t: TransactionType) => t.type === "expense")
   const incomes = transactions.filter((t: TransactionType) => t.type === "income")
   return (

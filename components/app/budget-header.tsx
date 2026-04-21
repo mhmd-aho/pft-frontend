@@ -7,17 +7,17 @@ export default async function BudgetHeader({totalExpenses,totalIncomes}: {totalE
     const formattedSavings = format.format(savings);
     return (
         <Card className="col-start-1 col-span-6 row-start-1 bg-muted-foreground text-background">
-                <CardContent className="flex justify-around items-center">
+                <CardContent className="flex justify-around items-center max-sm:p-0 ">
                     <div>
-                        <h1 className="sm:text-3xl text-xl">Total Income</h1>
+                        <h1 className="sm:text-3xl text-lg">Total Income</h1>
                         <h3 className="sm:text-lg text-sm text-center">{formattedTotalIncome}</h3>
                     </div>
                     <div>
-                        <h1 className="sm:text-3xl text-xl">Total Expenses</h1>
+                        <h1 className="sm:text-3xl text-lg">Total Expenses</h1>
                         <h3 className="sm:text-lg text-sm text-center">{formattedTotalExpenses}</h3>
                     </div>
                     <div>
-                        <h1 className="sm:text-3xl text-xl">Total Savings</h1>
+                        <h1 className="sm:text-3xl text-lg">Total Savings</h1>
                         <h3 className="sm:text-lg text-sm text-center">{formattedSavings}</h3>
                     </div>
                 </CardContent>

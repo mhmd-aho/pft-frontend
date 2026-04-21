@@ -8,7 +8,7 @@ export default async function Transactions({type}: {type: "expense" | "income"})
     if(typeof profileData === 'string'){
         return null;
     }
-    const res = await serverFetch(`/api/transactions/${profileData.id}/monthly/`, {
+    const res = await serverFetch(`/api/transactions/profile/${profileData.id}/monthly/`, {
         next: { tags: ['transactions'] } 
     });
     const data = await res.json();

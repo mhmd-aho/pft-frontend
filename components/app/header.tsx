@@ -3,7 +3,11 @@ import User from "./user";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Suspense } from "react";
 import Link from "next/link";
-export default function Header() {
+import { getUser } from "@/lib/user";
+import type { ProfileType } from "@/lib/schemas";
+export default async function Header() {
+    const profileData:ProfileType | null = await getUser();
+
     return (
         <header className="w-full h-12 px-4 flex items-center justify-between">
             <Link href="/dashboard">
@@ -11,7 +15,7 @@ export default function Header() {
             </Link>
             <div className="flex items-center gap-2">
                 <Suspense fallback={<Skeleton className="w-30 h-5" />}>
-                    <User />
+                    <User profileData={profileData} />
                 </Suspense>
                 <ThemeToggle />
             </div>

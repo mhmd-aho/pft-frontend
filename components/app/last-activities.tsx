@@ -25,7 +25,7 @@ try{
     categories = categoriesResJson.results;
 }
 catch(e){
-    error = e.details || 'Something went wrong'
+    error = e.message || 'Something went wrong'
 }
 
 return (
@@ -38,7 +38,7 @@ return (
                         <TransactionsDisplay transactions={transactions} error={error} />
                     </CardContent>
                     <CardFooter className="flex justify-end shrink-0">
-                        <AddTransactions categories={categories} />
+                        <AddTransactions categories={categories} porfile_id={profileData.id}/>
                     </CardFooter>
         </Card>
     );

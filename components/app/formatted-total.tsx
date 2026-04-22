@@ -15,13 +15,15 @@ export default function FormattedTotal({total}: {total: number}) {
             duration:duration,
             ease:'power3.out',
             onUpdate:()=>{
-                para.current.textContent = format.format(counter.val)
+                if(para.current){
+                    para.current.textContent = format.format(counter.val)
+                }
             }
         })
     }, {scope:container, dependencies:[total]});
     return (
         <CardContent ref={container}>
-            <p ref={para} className="sm:text-xl text-lg">0.00 $</p>
+            <p ref={para} className="sm:text-xl text-lg">$0.00</p>
         </CardContent>
     );
 }

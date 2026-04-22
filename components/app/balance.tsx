@@ -1,6 +1,6 @@
 import { Card, CardHeader, CardTitle } from "../ui/card";
 import { getUser } from "@/lib/user";
-import FormattedTotal from "./fornatted-total";
+import FormattedTotal from "./formatted-total";
 export default async function Balance() {
     const profileData = await getUser();
     if(typeof profileData === 'string'){

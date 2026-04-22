@@ -35,7 +35,7 @@ export function BudgetCard({budget,totalExpenses,categories}: {budget: BudgetTyp
             }
     }
     return (
-        <Card key={budget.id} className="col-span-1 row-span-1">
+        <Card key={budget.id} className='sm:h-48 h-32 max-sm:gap-2'>
                         <CardHeader>
                             {isEditing? (
                                 <NativeSelect onChange={(e) => setData({...data,category_id: Number(e.target.value)})}>
@@ -47,11 +47,11 @@ export function BudgetCard({budget,totalExpenses,categories}: {budget: BudgetTyp
                                     ))}
                                 </NativeSelect>
                             ) : (
-                                <CardTitle className="text-lg">{budget.category.name}</CardTitle>
+                                <CardTitle className="sm:text-lg text-sm">{budget.category.name}</CardTitle>
                             )}
                         </CardHeader>
                         <CardContent>
-                            <Field>
+                            <Field className="max-sm:gap-0">
                                 <FieldLabel>
 
                                     <p>{formattedTotalExpenses} / {isEditing? <Input type='number' step='0.01' placeholder='0.00' value={data.amount} onChange={(e) => setData({...data,amount: Number(e.target.value)})} className="w-32" /> : formattedBudgetAmount}</p>
@@ -59,7 +59,7 @@ export function BudgetCard({budget,totalExpenses,categories}: {budget: BudgetTyp
                                 <Progress  value={progress} />
                             </Field>
                         </CardContent>
-                        <CardFooter className="flex gap-2">
+                        <CardFooter className="flex sm:gap-2 gap-1">
                             <Button size='lg' onClick={isEditing? handleEdit : ()=>(setIsEditing(true))} variant="outline">{isEditing? 'Save' : 'Edit'}</Button>
                             <DeleteAlert id={budget.id} type='budget' />
                         </CardFooter>

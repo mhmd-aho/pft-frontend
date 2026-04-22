@@ -11,17 +11,14 @@ import { Input } from "../ui/input";
 import { NativeSelect, NativeSelectOption } from "../ui/native-select";
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { postBudget, getProfile, getCategories } from "@/app/actions";
-import { Skeleton } from "../ui/skeleton";
+import { postBudget, getCategories } from "@/app/actions";
 import AddCategory from "./add-category";
 type BudgetForm = z.infer<typeof budgetSchema>;
 export default function AddBudget() {
-    const [profile,setProfile] = useState<{id: number, name: string} | null>(null);
     const [categories,setCategories] = useState<CategoryType[]>([]);
-    const [profilePending,startProfileTransition] = useTransition();
     const [isPending,startTransition] = useTransition();
      const {register,handleSubmit,formState:{errors}} = useForm<BudgetForm>({
-            resolver: zodResolver(budgetSchema) as any,
+            resolver: zodResolver(budgetSchema),
             defaultValues:{
                 category_id: 0,
                 amount: 0
@@ -29,31 +26,19 @@ export default function AddBudget() {
         })
     useEffect(()=>{
         const fetchData = async () => {
-            startProfileTransition(async () => {
-                const profileRes = await getProfile();
-                if(profileRes.success){
-                    setProfile(profileRes.data);
-                    const categoriesRes = await getCategories();
-                    if(categoriesRes.success){
-                        setCategories(categoriesRes.data);
-                    }
-                    else{
-                        toast.error(categoriesRes.error)
-                    }
-                }
-                else{
-                toast.error(profileRes.error)
+            const categoriesRes = await getCategories();
+            if(categoriesRes.success){
+                setCategories(categoriesRes.data);
             }
-            })
+            else{
+                    toast.error(categoriesRes.error)
+                }
         }
         fetchData();
     },[])
-    if(!profile){
-        return null;
-    }
     const onSubmit = (data: BudgetForm) => {
         startTransition(async () => {
-            const res = await postBudget(data,profile.id);
+            const res = await postBudget(data);
             if(res.success){
                 toast.success('Budget added successfully');
             }
@@ -64,16 +49,9 @@ export default function AddBudget() {
     }
     return (
         <Popover>
-            <PopoverTrigger disabled={profilePending} className='col-span-1 row-span-1 h-full flex flex-col items-center justify-center border-muted shadow border  rounded-md cursor-pointer'>
-                {
-                    profilePending?
-                    <Skeleton className="h-full w-full" />
-                    :
-                    <>
+            <PopoverTrigger className="sm:h-48 h-32 flex flex-col items-center justify-center border-muted shadow border  rounded-md cursor-pointer">
                         <Plus className="sm:size-20 size-10"/>
                         <p className="sm:text-lg text-sm">Add Budget</p>
-                    </>
-                }
             </PopoverTrigger>
             <PopoverContent>
                     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-1">

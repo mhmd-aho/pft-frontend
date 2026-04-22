@@ -1,7 +1,7 @@
 import { Card, CardHeader, CardTitle } from "../ui/card";
 import { getUser } from "@/lib/user";
 import { TransactionType } from "@/lib/schemas";
-import FormattedTotal from "./fornatted-total";
+import FormattedTotal from "./formatted-total";
 import { serverFetch } from "@/lib/server-fetch";
 export default async function Transactions({type}: {type: "expense" | "income"}) {
     const profileData = await getUser();

@@ -20,6 +20,9 @@ export const getUser = cache(async () => {
             Authorization:`Token ${token}`
         }
     });
+    if(!profile.ok){
+        return 'the user is not logged in'
+    }
     const profileData = await profile.json();
     return profileData;
 })

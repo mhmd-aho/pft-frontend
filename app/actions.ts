@@ -5,22 +5,22 @@ import {transactionSchema} from "@/lib/schemas";
 import { serverFetch } from "@/lib/server-fetch";
 import { signinSchema, registerSchema, budgetSchema } from "@/lib/schemas";
 import { cookies } from "next/headers";
-export async function getProfile(){
-    try{
-        const userRes = await serverFetch(`/auth/users/me/`);
-        const userData = await userRes.json();
-        const profileRes = await serverFetch(`/api/profiles/${userData.username}/`);
-        if (!profileRes.ok) throw await profileRes.json();
-        const data = await profileRes.json();
-        return {
-            success: true,
-            data: data
-        };
-    }catch(error: any){
-        return { success: false, error: error.detail || 'Something went wrong'}
+import { redirect } from "next/navigation";
+type actionResult<T = undefined>= {success: true , data: T} | {success: false , error: string}
+function extractApiError(error: unknown): string {
+    if (typeof error === 'string') return error;
+    if (error?.detail) return error.detail;
+    if (error?.non_field_errors?.[0] && Array.isArray(error.non_field_errors)) return error.non_field_errors[0];
+    if (typeof error === 'object' && error !== null) {
+        const firstKey = Object.keys(error)[0];
+        const firstError = error[firstKey];
+        if (Array.isArray(firstError)) return firstError[0];
+        if (typeof firstError === 'string') return firstError;
+        if (typeof error === 'object') return extractApiError(firstError);
     }
+    return 'Something went wrong';
 }
-export async function signinAction(data:z.infer<typeof signinSchema>){
+export async function signinAction(data:z.infer<typeof signinSchema>): Promise<actionResult>{
     try{
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/token/login/`, {
             method: "POST",
@@ -29,31 +29,26 @@ export async function signinAction(data:z.infer<typeof signinSchema>){
             },
             body: JSON.stringify(data)
         });
-
+        const isJson = res.headers.get('content-type')?.includes('application/json');
+        const resData = isJson? await res.json() : null;
         if (!res.ok) {
-            const errorData = await res.json();
-            throw errorData;
+            const errorMessage = extractApiError(resData) | 'ServerError';
+            return {success: false, error: errorMessage}
         }
-
-        const resData = await res.json();
         const token = resData.auth_token;
-        
         const cookieStore = await cookies();
         cookieStore.set("token", token, {
             maxAge: 60 * 60 * 24 * 7,
             path: "/",
         });
 
-        return { success: true };
-    }catch(error: any){
-        if(error?.non_field_errors) return {error: error.non_field_errors[0]}
-        if(error?.username) return {error: error.username[0]}
-        if(error?.password) return {error: error.password[0]}
-        if(error?.detail) return {error: error.detail}
-        return {error: 'Something went wrong'}
+        return { success: true, data: resData };
+    }catch(error){
+        return {success: false, error: extractApiError(error)}
     }
 }
-export async function signupAction(data:z.infer<typeof registerSchema>){
+export async function signupAction(data:z.infer<typeof registerSchema>): Promise<actionResult>{
+    let shouldRedirect = false;
     try{
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/users/`, {
             method: "POST",
@@ -62,43 +57,31 @@ export async function signupAction(data:z.infer<typeof registerSchema>){
             },
             body: JSON.stringify(data)
         });
-        
+        const isJson = res.headers.get('content-type')?.includes('application/json');
+        const resData = isJson? await res.json() : null;
         if (!res.ok) {
-            const errorData = await res.json();
-            throw errorData;
+            const errorMessage = extractApiError(resData) || 'ServerError';
+            if (errorMessage.includes('already exists')){
+                shouldRedirect = true;
+            }
+            return {success: false, error: errorMessage}
+        }else{
+            const loginRes = await signinAction({username: data.username, password: data.password});
+            if (!loginRes.success) {
+                shouldRedirect = true;
+            }else{
+                return {success: true, data: resData};
+            }
         }
-
-        const loginRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/token/login/`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({username: data.username, password: data.password})
-        });
-
-        if (!loginRes.ok) {
-            const errorData = await loginRes.json();
-            throw errorData;
-        }
-
-        const resData = await loginRes.json();
-        const token = resData.auth_token;
-        const cookieStore = await cookies();
-        cookieStore.set("token", token, {
-            maxAge: 60 * 60 * 24 * 7,
-            path: "/",
-        });
-
-        return { success: true };
-    }catch(error: any){
-        if(error?.non_field_errors) return {success: false, error: error.non_field_errors[0]}
-        if(error?.username) return {success: false, error: error.username[0]}
-        if(error?.password) return {success: false, error: error.password[0]}
-        if(error?.detail) return {success: false, error: error.detail}
-        return { error: 'Something went wrong'}
+    }catch(error){
+        if(error instanceof Error && error.message === 'NEXT_REDIRECT') throw error;
+        return {success: false, error: extractApiError(error)}
+    }
+    if (shouldRedirect) {
+        redirect('/auth/signin');
     }
 }
-export async function logoutAction(){
+export async function logoutAction(): Promise<actionResult>{
     try{
         const res = await serverFetch(`/auth/token/logout/`, {
             method: "POST",
@@ -112,12 +95,9 @@ export async function logoutAction(){
             maxAge: 0,
             path: "/",
         });
-        return { success: true };
-    }catch(error: any){
-        if(error?.detail){
-            return {error: error.detail}
-        }
-        return {error: 'Something went wrong'}
+        return { success: true, data: await res.json() };
+    }catch(error){
+        return {success: false, error: extractApiError(error)}
     }
 }
 export async function postTransaction(data:z.infer<typeof transactionSchema>, profile_id: number) {
@@ -136,24 +116,12 @@ export async function postTransaction(data:z.infer<typeof transactionSchema>, pr
         }
 
         revalidateTag('transactions');
-        return { success: true };
-    }catch(error: any){
-        if(error?.detail){
-            return {error: error.detail}
-        }
-        if(error?.amount){
-            return {error: error.amount[0]}
-        }
-        if(error?.type){
-            return {error: error.type[0]}
-        }
-        if(error?.category_id){
-            return {error: error.category_id[0]}
-        }
-        return {error: 'Something went wrong'}
+        return { success: true, data: await res.json() };
+    }catch(error){
+        return {success: false, error: extractApiError(error)}
     }
 }
-export async function deleteTransaction(transaction_id: number) {
+export async function deleteTransaction(transaction_id: number): Promise<actionResult> {
     try{
         const res = await serverFetch(`/api/transactions/${transaction_id}`, {
             method: "DELETE",
@@ -165,15 +133,12 @@ export async function deleteTransaction(transaction_id: number) {
         }
 
         revalidateTag('transactions');
-        return { success: true };
-    }catch(error: any){
-        if(error?.detail){
-            return {error: error.detail}
-        }
-        return {error: 'Something went wrong'}
+        return { success: true, data: undefined };
+    }catch(error){
+        return {success: false, error: extractApiError(error)}
     }
 }
-export async function getCategories(){
+export async function getCategories(): Promise<actionResult>{
     try{
         const res = await serverFetch(`/api/categories/`);
         if (!res.ok) {
@@ -182,14 +147,11 @@ export async function getCategories(){
         }
         const data = await res.json();
         return {success: true, data: data.results};
-    }catch(error: any){
-        if(error?.detail){
-            return {success: false, error: error.detail}
-        }
-        return {success: false, error: 'Something went wrong'}
+    }catch(error){
+        return {success: false, error: extractApiError(error)}
     }
 }
-export async function postCategory(name:string){
+export async function postCategory(name:string): Promise<actionResult>{
     try{
         const res = await serverFetch(`/api/categories/`, {
             method: "POST",
@@ -205,16 +167,13 @@ export async function postCategory(name:string){
         }
 
         revalidateTag('categories');
-        return { success: true };
-    }catch(error: any){
-        if(error?.detail){
-            return {success: false, error: error.detail}
-        }
-        return { error: 'Something went wrong'}
+        return { success: true, data: await res.json() };
+    }catch(error){
+        return {success: false, error: extractApiError(error)}
     }
 }
 
-export async function postBudget(data:z.infer<typeof budgetSchema>) {
+export async function postBudget(data:z.infer<typeof budgetSchema>): Promise<actionResult> {
     try{
         const res = await serverFetch(`/api/budgets/`, {
             method: "POST",
@@ -230,22 +189,13 @@ export async function postBudget(data:z.infer<typeof budgetSchema>) {
         }
 
         revalidateTag('budgets');
-        return { success: true };
-    }catch(error: any){
-        if(error?.detail){
-            return {error: error.detail}
-        }
-        if(error?.amount){
-            return {error: error.amount[0]}
-        }
-        if(error?.category_id){
-            return {error: error.category_id[0]}
-        }
-        return {error: 'Something went wrong'}
+        return { success: true, data: await res.json() };
+    }catch(error){
+        return {success: false, error: extractApiError(error)}
     }
 }
 
-export async function patchBudget(data:z.infer<typeof budgetSchema>, budget_id: number) {
+export async function patchBudget(data:z.infer<typeof budgetSchema>, budget_id: number): Promise<actionResult> {
     try{
         const res = await serverFetch(`/api/budgets/${budget_id}/`, {
             method: "PATCH",
@@ -261,22 +211,13 @@ export async function patchBudget(data:z.infer<typeof budgetSchema>, budget_id: 
         }
 
         revalidateTag('budgets');
-        return { success: true };
-    }catch(error: any){
-        if(error?.detail){
-            return {error: error.detail}
-        }
-        if(error?.amount){
-            return {error: error.amount[0]}
-        }
-        if(error?.category_id){
-            return {error: error.category_id[0]}
-        }
-        return {error: 'Something went wrong'}
+        return { success: true, data: await res.json() };
+    }catch(error){
+        return {success: false, error: extractApiError(error)}
     }
 }
 
-export async function deleteBudget(budget_id: number) {
+export async function deleteBudget(budget_id: number): Promise<actionResult> {
     try{
         const res = await serverFetch(`/api/budgets/${budget_id}/`, {
             method: "DELETE",
@@ -288,12 +229,9 @@ export async function deleteBudget(budget_id: number) {
         }
 
         revalidateTag('budgets');
-        return { success: true };
-    }catch(error: any){
-        if(error?.detail){
-            return {error: error.detail}
-        }
-        return {error: 'Something went wrong'}
+        return { success: true, data: undefined };
+    }catch(error){
+        return {success: false, error: extractApiError(error)}
     }
 }
         

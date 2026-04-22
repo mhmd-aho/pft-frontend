@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useTransition } from "react";
+import { useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { transactionSchema } from "@/lib/schemas";
@@ -11,30 +11,13 @@ import { Input } from "../ui/input";
 import { NativeSelect, NativeSelectOption } from "../ui/native-select";
 import { Label } from "../ui/label";
 import { toast } from "sonner";
-import { Skeleton } from "../ui/skeleton"
-import { postTransaction, getProfile } from "@/app/actions";
 import AddCategory from "./add-category";
+import { postTransaction } from "@/app/actions";
 type TransactionForm = z.infer<typeof transactionSchema>
-export default function AddTransactions({categories}: {categories: {id: number, name: string}[]}) {
-    const [profile,setProfile] = useState<{id: number, name: string} | null>(null);
-    const [profilePending,startProfileTransition] = useTransition();
-    useEffect(()=>{
-        const fetchData = async () => {
-            startProfileTransition(async () => {
-                const profileRes = await getProfile();
-                if(profileRes.success){
-                    setProfile(profileRes.data);
-                }
-                else{
-                    toast.error(profileRes.error)
-                }
-            })
-        }    
-        fetchData();
-    },[])
+export default function AddTransactions({categories,porfile_id}: {categories: {id: number, name: string}[], porfile_id: number}) {
     const [isPending,startTransition] = useTransition()
     const {register,handleSubmit,formState:{errors}} = useForm<TransactionForm>({
-        resolver: zodResolver(transactionSchema) as any,
+        resolver: zodResolver(transactionSchema),
         defaultValues:{
             category_id: 0,
             type:undefined as 'income' | 'expense' | undefined,
@@ -43,11 +26,11 @@ export default function AddTransactions({categories}: {categories: {id: number, 
     })
     const onSubmit = (data: TransactionForm)=>{
         startTransition( async ()=>{
-            if(!profile){
+            if(!porfile_id){
                 toast.error('You need to be logged in to add a transaction');
                 return;
             }
-            const res = await postTransaction(data, profile.id)
+            const res = await postTransaction(data, porfile_id)
             if(res?.error){
                 toast.error(res.error)
             }else{
@@ -59,13 +42,8 @@ export default function AddTransactions({categories}: {categories: {id: number, 
 
     return (
             <Popover>
-                <PopoverTrigger disabled={profilePending} className="cursor-pointer" asChild>
-                    {
-                        profilePending?
-                        <Skeleton className="max-sm:w-full w-30 h-10" />
-                        :
+                <PopoverTrigger className="cursor-pointer" asChild>
                         <Button className="max-sm:w-full"><Plus className="size-4"/> Add Transaction</Button>
-                    }
                 </PopoverTrigger>
                 <PopoverContent className="h-fit w-80">
                     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-1">

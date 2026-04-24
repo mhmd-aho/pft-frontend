@@ -49,7 +49,7 @@ export default function AddBudget() {
     }
     return (
         <Popover>
-            <PopoverTrigger className="sm:h-48 h-32 flex flex-col items-center justify-center border-muted shadow border  rounded-md cursor-pointer">
+            <PopoverTrigger className="sm:min-h-48 lg:h-72 h-32 flex flex-col items-center justify-center border-muted shadow border  rounded-md cursor-pointer">
                         <Plus className="sm:size-20 size-10"/>
                         <p className="sm:text-lg text-sm">Add Budget</p>
             </PopoverTrigger>

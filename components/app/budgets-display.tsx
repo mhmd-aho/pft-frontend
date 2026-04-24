@@ -10,7 +10,7 @@ export default async function BudgetsDisplay({Expenses,categories}: {Expenses: T
     return (
         <div className="col-span-6 row-start-2 row-end-6 flex flex-col gap-1">
             <h3 className="sm:text-lg text-sm">Categories breakdown</h3>
-            <div className="flex-1 grid sm:grid-cols-3 grid-cols-1 overflow-y-auto gap-3"> 
+            <div className="flex-1 grid sm:grid-cols-2 lg:grid-cols-3 grid-cols-1 overflow-y-auto gap-3 pb-2"> 
                     {
                         budgets.map((budget:BudgetType) => {
                             const totalExpenses = Expenses.filter((t: TransactionType) => t.category.id === budget.category.id).reduce((acc: number, t: TransactionType) => acc + Number(t.amount), 0);

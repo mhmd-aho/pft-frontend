@@ -35,7 +35,7 @@ export function BudgetCard({budget,totalExpenses,categories}: {budget: BudgetTyp
             }
     }
     return (
-        <Card key={budget.id} className='sm:h-48 h-32 max-sm:gap-2'>
+        <Card key={budget.id} className='sm:h-48 lg:h-72 w-full h-32 max-sm:gap-2'>
                         <CardHeader>
                             {isEditing? (
                                 <NativeSelect onChange={(e) => setData({...data,category_id: Number(e.target.value)})}>
@@ -47,20 +47,19 @@ export function BudgetCard({budget,totalExpenses,categories}: {budget: BudgetTyp
                                     ))}
                                 </NativeSelect>
                             ) : (
-                                <CardTitle className="sm:text-lg text-sm">{budget.category.name}</CardTitle>
+                                <CardTitle className="sm:text-lg lg:text-2xl text-sm">{budget.category.name}</CardTitle>
                             )}
                         </CardHeader>
                         <CardContent>
                             <Field className="max-sm:gap-0">
-                                <FieldLabel>
-
+                                <FieldLabel className="sm:text-lg lg:text-xl text-sm">
                                     <p>{formattedTotalExpenses} / {isEditing? <Input type='number' step='0.01' placeholder='0.00' value={data.amount} onChange={(e) => setData({...data,amount: Number(e.target.value)})} className="w-32" /> : formattedBudgetAmount}</p>
                                 </FieldLabel>
                                 <Progress  value={progress} />
                             </Field>
                         </CardContent>
                         <CardFooter className="flex sm:gap-2 gap-1">
-                            <Button size='lg' onClick={isEditing? handleEdit : ()=>(setIsEditing(true))} variant="outline">{isEditing? 'Save' : 'Edit'}</Button>
+                            <Button  size='lg' onClick={isEditing? handleEdit : ()=>(setIsEditing(true))} variant="outline">{isEditing? 'Save' : 'Edit'}</Button>
                             <DeleteAlert id={budget.id} type='budget' />
                         </CardFooter>
         </Card>

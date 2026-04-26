@@ -10,10 +10,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z} from "zod";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { useTransition } from "react";
+import { useTransition, useState } from "react";
 import { signupAction } from "@/app/actions";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 type SignUpFormType = z.infer<typeof registerSchema>
 export function SignUpForm(){
+    const [inputTypeOne,setInputTypeOne]=useState<'password' | 'text'>('password');
+    const [inputTypeTwo,setInputTypeTwo]=useState<'password' | 'text'>('password');
     const [isPending,startTransition] = useTransition()
     const {register,handleSubmit,formState:{ errors }}= useForm<SignUpFormType>({
         resolver: zodResolver(registerSchema),
@@ -63,15 +66,26 @@ export function SignUpForm(){
                         </div>
                         <div className="flex flex-col gap-1">
                             <Label htmlFor="password" className="text-xl">Password</Label>
-                            <Input className={`h-10 ${errors.password?'border-destructive':''}`} id="password" type="password" {...register('password')} />
+                            <div className="relative">
+                                <Input className={`h-10 ${errors.password?'border-destructive':''}`} id="password" type={inputTypeOne} {...register('password')} />
+                                <Button type="button" variant="ghost" className="absolute right-2 top-0 h-full"  onClick={() => setInputTypeOne(inputTypeOne === 'password' ? 'text' : 'password')}>
+                                    {inputTypeOne === 'password' ? <Eye /> : <EyeOff />}
+                                </Button>
+                            </div>
+
                             {errors.password && <p className="text-xs text-destructive">{errors.password.message as string}</p>}
                         </div>
                         <div className="flex flex-col gap-1">
                             <Label htmlFor="re_password" className="text-xl">Confirm password</Label>
-                            <Input className={`h-10 ${errors.re_password?'border-destructive':''}`} id="re_password" type="password" {...register('re_password')} />
+                            <div className="relative">
+                                <Input className={`h-10 ${errors.re_password?'border-destructive':''}`} id="re_password" type={inputTypeTwo} {...register('re_password')} />
+                                <Button type="button" variant="ghost" className="absolute right-2 top-0 h-full"  onClick={() => setInputTypeTwo(inputTypeTwo === 'password' ? 'text' : 'password')}>
+                                    {inputTypeTwo === 'password' ? <Eye /> : <EyeOff />}
+                                </Button>
+                            </div>
                             {errors.re_password && <p className="text-xs text-destructive">{errors.re_password.message as string}</p>}
                         </div>
-                        <Button disabled={isPending} type="submit" className="w-full h-10 text-xl">Sign Up</Button>  
+                        <Button disabled={isPending} type="submit" className="w-full h-10 text-xl">{isPending ? <>Signing Up <Loader2 className="size-4 animate-spin ml-2" /></>:'Sign Up'}</Button>  
                     </form>
                 </CardContent>
                 <CardFooter>

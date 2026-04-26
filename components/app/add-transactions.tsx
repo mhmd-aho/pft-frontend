@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { transactionSchema } from "@/lib/schemas";
 import { z } from "zod";
 import { Button } from "../ui/button";
-import { Plus } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Input } from "../ui/input";
 import { NativeSelect, NativeSelectOption } from "../ui/native-select";
@@ -72,7 +72,7 @@ export default function AddTransactions({categories,porfile_id}: {categories: {i
                             <AddCategory />
                             {errors.category_id && <p className="text-destructive">{errors.category_id.message}</p>}
                         </div>
-                        <Button type="submit" disabled={isPending}>Add Transaction</Button>
+                        <Button type="submit" disabled={isPending}>{isPending ? <>Adding Transaction <Loader2 className="size-4 animate-spin ml-2" /></>:'Add Transaction'}</Button>
                     </form>
                 </PopoverContent>
             </Popover>

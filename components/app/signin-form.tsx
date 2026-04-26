@@ -10,12 +10,14 @@ import {useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signinSchema } from "@/lib/schemas";
 import {z} from "zod";
-import { useTransition } from "react";
+import { useTransition,useState } from "react";
 import { signinAction } from "@/app/actions";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 type SignInFormType = z.infer<typeof signinSchema>
 export function SignInForm() {
+    const [inputType,setInputType]=useState<'password' | 'text'>('password');
     const [isPending,startTransition] = useTransition()
-    const {register,handleSubmit,formState:{ errors }}= useForm<SignInFormType>({
+    const {register,reset,handleSubmit,formState:{ errors }}= useForm<SignInFormType>({
         resolver: zodResolver(signinSchema),
         defaultValues:{
             username: '',
@@ -36,6 +38,8 @@ export function SignInForm() {
                 
             }catch{
                 toast.error("Something went wrong");
+            }finally{
+                reset();
             }
 
         })
@@ -57,10 +61,15 @@ export function SignInForm() {
                         </div>
                         <div className="flex flex-col gap-1">
                             <Label htmlFor="password" className="text-xl">Password</Label>
-                            <Input className={`h-10 ${errors.password?'border-destructive':''}`} id="password" type="password" {...register('password')} />
+                            <div className="relative">
+                                <Input className={`h-10 ${errors.password?'border-destructive':''}`} id="password" type={inputType} {...register('password')} />
+                                <Button type="button" variant="ghost" className="absolute right-2 top-0 h-full"  onClick={() => setInputType(inputType === 'password' ? 'text' : 'password')}>
+                                    {inputType === 'password' ? <Eye /> : <EyeOff />}
+                                </Button>
+                            </div>
                             {errors.password && <p className="text-xs text-destructive">{errors.password.message as string}</p>}
                         </div>
-                        <Button disabled={isPending} type="submit" className="w-full h-10 text-xl">Sign In</Button>  
+                        <Button disabled={isPending} type="submit" className="w-full h-10 text-xl">{isPending ? <>Signing In <Loader2 className="size-4 animate-spin mr-2" /></>:'Sign In'}</Button>  
                     </form>
                 </CardContent>
                 <CardFooter>

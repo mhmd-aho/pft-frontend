@@ -51,7 +51,6 @@ export async function signinAction(data:z.infer<typeof signinSchema>): Promise<a
     }
 }
 export async function signupAction(data:z.infer<typeof registerSchema>): Promise<actionResult>{
-    let shouldRedirect = false;
     try{
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/users/`, {
             method: "POST",
@@ -63,27 +62,12 @@ export async function signupAction(data:z.infer<typeof registerSchema>): Promise
         const isJson = res.headers.get('content-type')?.includes('application/json');
         const resData = isJson? await res.json() : null;
         if (!res.ok) {
-            const error = new ApiError(res.status, resData);
-            if (error.message.includes('already exists')){
-                shouldRedirect = true;
-            }
-            throw error;
-        }else{
-            const loginRes = await signinAction({username: data.username, password: data.password});
-            if (!loginRes.success) {
-                shouldRedirect = true;
-            }else{
-                return {success: true, data: resData};
-            }
+            throw new ApiError(res.status,resData);
         }
+        return {success: true, data: resData};
     }catch(error){
-        if(error instanceof Error && error.message === 'NEXT_REDIRECT') throw error;
         return {success: false, error: extractApiError(error)}
     }
-    if (shouldRedirect) {
-        redirect('/auth/signin');
-    }
-    return {success: false, error: 'Unexpected error'};
 }
 export async function logoutAction(): Promise<actionResult>{
     try{

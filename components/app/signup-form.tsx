@@ -34,7 +34,7 @@ export function SignUpForm(){
                const res = await signupAction(data);
                if(res.success){
                    toast.success("Signed up successfully");
-                   router.push("/dashboard");
+                   router.push("/auth/signin");
                }else{
                    toast.error(res.error);
                }

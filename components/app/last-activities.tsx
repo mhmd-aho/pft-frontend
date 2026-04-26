@@ -24,7 +24,7 @@ try{
     const categoriesResJson = await categoriesRes.json();
     categories = categoriesResJson.results;
 }
-catch(e){
+catch(e: any){
     error = e.message || 'Something went wrong'
 }
 

@@ -17,7 +17,7 @@ export default function AddCategory() {
         }
         startTransition( async ()=>{
             const res = await postCategory(name)
-            if(res?.error){
+            if(res && !res.success){
                 toast.error(res.error)
             }else{
                 toast.success('Category added successfully')

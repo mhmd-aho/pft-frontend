@@ -26,7 +26,7 @@ export function BudgetCard({budget,totalExpenses,categories}: {budget: BudgetTyp
             return
         }
             const res = await patchBudget(data,budget.id);
-            if(res?.error){
+            if(res && !res.success){
                 toast.error(res.error)
             }
             else{

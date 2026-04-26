@@ -17,7 +17,7 @@ type TransactionForm = z.infer<typeof transactionSchema>
 export default function AddTransactions({categories,porfile_id}: {categories: {id: number, name: string}[], porfile_id: number}) {
     const [isPending,startTransition] = useTransition()
     const {register,handleSubmit,formState:{errors}} = useForm<TransactionForm>({
-        resolver: zodResolver(transactionSchema),
+        resolver: zodResolver(transactionSchema) as any,
         defaultValues:{
             category_id: 0,
             type:undefined as 'income' | 'expense' | undefined,
@@ -31,7 +31,7 @@ export default function AddTransactions({categories,porfile_id}: {categories: {i
                 return;
             }
             const res = await postTransaction(data, porfile_id)
-            if(res?.error){
+            if(res && !res.success){
                 toast.error(res.error)
             }else{
                 toast.success('Transaction added successfully')

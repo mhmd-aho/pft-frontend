@@ -10,7 +10,7 @@ export default function DeleteAlert({id,type}: {id: number,type: 'transaction' |
 
         startTransition(async () => {
             const res = type === 'transaction'? await deleteTransaction(id) : await deleteBudget(id);
-            if(res?.error){
+            if(res && !res.success){
                 toast.error(res.error);
             }else{
                 toast.success(`${type} deleted successfully`);

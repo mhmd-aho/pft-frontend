@@ -3,7 +3,7 @@ import {z} from "zod";
 import { revalidateTag } from "next/cache";
 import {transactionSchema} from "@/lib/schemas";
 import { serverFetch, ApiError } from "@/lib/server-fetch";
-import { signinSchema, registerSchema, budgetSchema } from "@/lib/schemas";
+import { signinSchema, registerSchema, budgetSchema, CategoryType } from "@/lib/schemas";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 type actionResult<T = undefined>= {success: true , data: T} | {success: false , error: string}
@@ -83,6 +83,7 @@ export async function signupAction(data:z.infer<typeof registerSchema>): Promise
     if (shouldRedirect) {
         redirect('/auth/signin');
     }
+    return {success: false, error: 'Unexpected error'};
 }
 export async function logoutAction(): Promise<actionResult>{
     try{
@@ -111,7 +112,7 @@ export async function postTransaction(data:z.infer<typeof transactionSchema>, pr
             body: JSON.stringify({...data, profile_id})
         });
 
-        revalidateTag('transactions');
+        revalidateTag('transactions','max');
         return { success: true, data: await res.json() };
     }catch(error){
         return {success: false, error: extractApiError(error)}
@@ -119,17 +120,17 @@ export async function postTransaction(data:z.infer<typeof transactionSchema>, pr
 }
 export async function deleteTransaction(transaction_id: number): Promise<actionResult> {
     try{
-        const res = await serverFetch(`/api/transactions/${transaction_id}`, {
+        await serverFetch(`/api/transactions/${transaction_id}`, {
             method: "DELETE",
         });
 
-        revalidateTag('transactions');
+        revalidateTag('transactions','max');
         return { success: true, data: undefined };
     }catch(error){
         return {success: false, error: extractApiError(error)}
     }
 }
-export async function getCategories(): Promise<actionResult>{
+export async function getCategories(): Promise<actionResult<CategoryType[]>>{
     try{
         const res = await serverFetch(`/api/categories/`);
         const data = await res.json();
@@ -148,7 +149,7 @@ export async function postCategory(name:string): Promise<actionResult>{
             body: JSON.stringify({name: name})
         });
 
-        revalidateTag('categories');
+        revalidateTag('categories','max');
         return { success: true, data: await res.json() };
     }catch(error){
         return {success: false, error: extractApiError(error)}
@@ -165,7 +166,7 @@ export async function postBudget(data:z.infer<typeof budgetSchema>): Promise<act
             body: JSON.stringify(data)
         });
 
-        revalidateTag('budgets');
+        revalidateTag('budgets','max');
         return { success: true, data: await res.json() };
     }catch(error){
         return {success: false, error: extractApiError(error)}
@@ -182,7 +183,7 @@ export async function patchBudget(data:z.infer<typeof budgetSchema>, budget_id: 
             body: JSON.stringify(data)
         });
 
-        revalidateTag('budgets');
+        revalidateTag('budgets','max');
         return { success: true, data: await res.json() };
     }catch(error){
         return {success: false, error: extractApiError(error)}
@@ -191,11 +192,10 @@ export async function patchBudget(data:z.infer<typeof budgetSchema>, budget_id: 
 
 export async function deleteBudget(budget_id: number): Promise<actionResult> {
     try{
-        const res = await serverFetch(`/api/budgets/${budget_id}/`, {
+        await serverFetch(`/api/budgets/${budget_id}/`, {
             method: "DELETE",
         });
-
-        revalidateTag('budgets');
+        revalidateTag('budgets','max');
         return { success: true, data: undefined };
     }catch(error){
         return {success: false, error: extractApiError(error)}

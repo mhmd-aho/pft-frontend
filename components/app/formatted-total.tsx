@@ -5,8 +5,8 @@ import { useGSAP } from "@gsap/react";
 import { useRef } from "react";
 import { format } from "@/lib/utils";
 export default function FormattedTotal({total}: {total: number}) {
-    const container = useRef(null);
-    const para = useRef(null);
+    const container = useRef<HTMLDivElement>(null);
+    const para = useRef<HTMLParagraphElement>(null);
     useGSAP(() => {
         const counter = {val:0}
         const duration = total / 300;

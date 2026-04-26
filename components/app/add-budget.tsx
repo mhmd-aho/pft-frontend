@@ -18,7 +18,7 @@ export default function AddBudget() {
     const [categories,setCategories] = useState<CategoryType[]>([]);
     const [isPending,startTransition] = useTransition();
      const {register,handleSubmit,formState:{errors}} = useForm<BudgetForm>({
-            resolver: zodResolver(budgetSchema),
+            resolver: zodResolver(budgetSchema) as any,
             defaultValues:{
                 category_id: 0,
                 amount: 0

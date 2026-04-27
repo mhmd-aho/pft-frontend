@@ -7,18 +7,18 @@ export default async function BudgetHeader({totalExpenses,totalIncomes}: {totalE
     const formattedSavings = format.format(savings);
     return (
         <Card className="col-start-1 col-span-6 row-start-1 bg-muted-foreground text-background">
-                <CardContent className="flex justify-around items-center max-sm:p-0 ">
-                    <div>
-                        <h2 className="sm:text-3xl text-lg">Total Income</h2>
-                        <h3 className="sm:text-lg text-sm text-center">{formattedTotalIncome}</h3>
+                <CardContent className="flex max-sm:flex-col justify-around items-center max-sm:p-0 ">
+                    <div className="flex sm:flex-col justify-between sm:justify-center max-sm:w-full max-sm:p-2">
+                        <h2 className="lg:text-3xl sm:text-lg text-base">Total Income</h2>
+                        <h3 className="lg:text-lg sm:text-base text-sm text-center">{formattedTotalIncome}</h3>
                     </div>
-                    <div>
-                        <h2 className="sm:text-3xl text-lg">Total Expenses</h2>
-                        <h3 className="sm:text-lg text-sm text-center">{formattedTotalExpenses}</h3>
+                    <div className="flex sm:flex-col justify-between sm:justify-center max-sm:w-full max-sm:p-2">
+                        <h2 className="lg:text-3xl sm:text-lg text-base">Total Expenses</h2>
+                        <h3 className="lg:text-lg sm:text-base text-sm text-center">{formattedTotalExpenses}</h3>
                     </div>
-                    <div>
-                        <h2 className="sm:text-3xl text-lg">Total Savings</h2>
-                        <h3 className="sm:text-lg text-sm text-center">{formattedSavings}</h3>
+                    <div className="flex sm:flex-col justify-between sm:justify-center max-sm:w-full max-sm:p-2">
+                        <h2 className="lg:text-3xl sm:text-lg text-base">Total Savings</h2>
+                        <h3 className="lg:text-lg sm:text-base text-sm text-center">{formattedSavings}</h3>
                     </div>
                 </CardContent>
         </Card>

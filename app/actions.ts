@@ -1,6 +1,6 @@
 'use server'
 import {z} from "zod";
-import { revalidateTag } from "next/cache";
+import { updateTag } from "next/cache";
 import {transactionSchema} from "@/lib/schemas";
 import { serverFetch, ApiError } from "@/lib/server-fetch";
 import { signinSchema, registerSchema, budgetSchema, CategoryType } from "@/lib/schemas";
@@ -96,7 +96,7 @@ export async function postTransaction(data:z.infer<typeof transactionSchema>, pr
             body: JSON.stringify({...data, profile_id})
         });
 
-        revalidateTag('transactions','max');
+        updateTag('transactions');
         return { success: true, data: await res.json() };
     }catch(error){
         return {success: false, error: extractApiError(error)}
@@ -108,21 +108,13 @@ export async function deleteTransaction(transaction_id: number): Promise<actionR
             method: "DELETE",
         });
 
-        revalidateTag('transactions','max');
+        updateTag('transactions');
         return { success: true, data: undefined };
     }catch(error){
         return {success: false, error: extractApiError(error)}
     }
 }
-export async function getCategories(): Promise<actionResult<CategoryType[]>>{
-    try{
-        const res = await serverFetch(`/api/categories/`);
-        const data = await res.json();
-        return {success: true, data: data.results};
-    }catch(error){
-        return {success: false, error: extractApiError(error)}
-    }
-}
+
 export async function postCategory(name:string): Promise<actionResult>{
     try{
         const res = await serverFetch(`/api/categories/`, {
@@ -133,7 +125,7 @@ export async function postCategory(name:string): Promise<actionResult>{
             body: JSON.stringify({name: name})
         });
 
-        revalidateTag('categories','max');
+        updateTag('categories');
         return { success: true, data: await res.json() };
     }catch(error){
         return {success: false, error: extractApiError(error)}
@@ -150,7 +142,7 @@ export async function postBudget(data:z.infer<typeof budgetSchema>): Promise<act
             body: JSON.stringify(data)
         });
 
-        revalidateTag('budgets','max');
+        updateTag('budgets');
         return { success: true, data: await res.json() };
     }catch(error){
         return {success: false, error: extractApiError(error)}
@@ -167,7 +159,7 @@ export async function patchBudget(data:z.infer<typeof budgetSchema>, budget_id: 
             body: JSON.stringify(data)
         });
 
-        revalidateTag('budgets','max');
+        updateTag('budgets');
         return { success: true, data: await res.json() };
     }catch(error){
         return {success: false, error: extractApiError(error)}
@@ -179,7 +171,7 @@ export async function deleteBudget(budget_id: number): Promise<actionResult> {
         await serverFetch(`/api/budgets/${budget_id}/`, {
             method: "DELETE",
         });
-        revalidateTag('budgets','max');
+        updateTag('budgets');
         return { success: true, data: undefined };
     }catch(error){
         return {success: false, error: extractApiError(error)}

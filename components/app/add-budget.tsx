@@ -9,13 +9,12 @@ import {z} from 'zod'
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { NativeSelect, NativeSelectOption } from "../ui/native-select";
-import { useEffect, useState, useTransition } from "react";
+import { useTransition } from "react";
 import { toast } from "sonner";
-import { postBudget, getCategories } from "@/app/actions";
+import { postBudget } from "@/app/actions";
 import AddCategory from "./add-category";
 type BudgetForm = z.infer<typeof budgetSchema>;
-export default function AddBudget() {
-    const [categories,setCategories] = useState<CategoryType[]>([]);
+export default function AddBudget({categories}: {categories: CategoryType[]}) {
     const [isPending,startTransition] = useTransition();
      const {register,handleSubmit,formState:{errors}} = useForm<BudgetForm>({
             resolver: zodResolver(budgetSchema) as any,
@@ -24,18 +23,6 @@ export default function AddBudget() {
                 amount: 0
             }
         })
-    useEffect(()=>{
-        const fetchData = async () => {
-            const categoriesRes = await getCategories();
-            if(categoriesRes.success){
-                setCategories(categoriesRes.data);
-            }
-            else{
-                    toast.error(categoriesRes.error)
-                }
-        }
-        fetchData();
-    },[])
     const onSubmit = (data: BudgetForm) => {
         startTransition(async () => {
             const res = await postBudget(data);

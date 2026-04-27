@@ -1,4 +1,3 @@
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Button } from "../ui/button";
 import { Plus } from "lucide-react";
 import { Label } from "../ui/label";
@@ -7,6 +6,7 @@ import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { postCategory } from "@/app/actions";
 import { Skeleton } from "../ui/skeleton";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 export default function AddCategory() {
     const [name, setName] = useState('');
     const [isPending, startTransition] = useTransition();
@@ -26,17 +26,17 @@ export default function AddCategory() {
         })
     }
     return (
-        <Popover>
-            <PopoverTrigger disabled={isPending} asChild>
+        <Dialog>
+            <DialogTrigger disabled={isPending} asChild>
                 {isPending ? <Skeleton className="w-full h-10" /> : <Button variant="outline" size="sm" className="w-full"><Plus className="size-4"/> Add Category</Button>}
-            </PopoverTrigger>
-            <PopoverContent className="h-fit w-80">
-                <div className="flex flex-col gap-1">
-                    <Label htmlFor="name">Category Name</Label>
+            </DialogTrigger>
+            <DialogContent className="h-fit w-80">
+                <DialogHeader>
+                    <DialogTitle>Add Category</DialogTitle>
+                </DialogHeader>
                     <Input type='text' placeholder='Category Name' value={name} onChange={(e) => setName(e.target.value)} />
-                </div>
                 <Button onClick={() => handleAddCategory(name)}>Add Category</Button>
-            </PopoverContent>
-        </Popover>
+            </DialogContent>
+        </Dialog>
     );
 }

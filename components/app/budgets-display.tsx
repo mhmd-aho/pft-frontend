@@ -19,7 +19,7 @@ export default async function BudgetsDisplay({Expenses,categories}: {Expenses: T
                             )
                         })
                     }
-                    <AddBudget/>
+                    <AddBudget categories={categories}/>
             </div>
         </div>
     );

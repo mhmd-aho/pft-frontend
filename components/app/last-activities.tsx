@@ -1,16 +1,17 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../ui/card";
-import { CategoryType, TransactionType } from "@/lib/schemas";
+import { TransactionType } from "@/lib/schemas";
 import { getUser } from "@/lib/user";
-import AddTransactions from "./add-transactions";
 import { serverFetch } from "@/lib/server-fetch";
 import TransactionsDisplay from "./transactions-display";
+import { Plus } from "lucide-react";
+import Link from "next/link";
+import { Button } from "../ui/button";
 export default async function LastActivities() {
 const profileData = await getUser();
 if(typeof profileData === 'string'){
     return null;
 }
 let transactions:TransactionType[] = [];
-let categories:CategoryType[] = [];
 let error = ''
 try{
     const res =  await serverFetch(`/api/transactions/profile/${profileData.id}/last-ten-days/`,{
@@ -18,11 +19,6 @@ try{
     })
     const resJson = await res.json();
     transactions = resJson.results;
-    const categoriesRes = await serverFetch(`/api/categories/`,{
-        next: { tags: ['categories'] } 
-    });
-    const categoriesResJson = await categoriesRes.json();
-    categories = categoriesResJson.results;
 }
 catch(e: any){
     error = e.message || 'Something went wrong'
@@ -38,7 +34,12 @@ return (
                         <TransactionsDisplay transactions={transactions} error={error} />
                     </CardContent>
                     <CardFooter className="flex justify-end shrink-0">
-                        <AddTransactions categories={categories} porfile_id={profileData.id}/>
+                        <Button asChild>
+                            <Link href="/dashboard/transaction/add">
+                                <Plus className="size-4"/>
+                                Add Transaction
+                            </Link>
+                        </Button>
                     </CardFooter>
         </Card>
     );

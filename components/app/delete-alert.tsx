@@ -2,10 +2,12 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useTransition } from "react";
 import { deleteTransaction, deleteBudget } from "@/app/actions";
 import { toast } from "sonner";
-import { Loader2, Trash } from "lucide-react";
+import { Loader2} from "lucide-react";
 import { Button } from "../ui/button";
+import { useRouter } from "next/navigation";
 export default function DeleteAlert({id,type}: {id: number,type: 'transaction' | 'budget'}) {
     const [isPending,startTransition] = useTransition();
+    const router = useRouter();
     const handleDelete = () => {
 
         startTransition(async () => {
@@ -14,17 +16,22 @@ export default function DeleteAlert({id,type}: {id: number,type: 'transaction' |
                 toast.error(res.error);
             }else{
                 toast.success(`${type} deleted successfully`);
+                if(type === 'transaction'){
+                    router.push('/dashboard');
+                }
             }
         });
     }
     return (
         <AlertDialog>
             <AlertDialogTrigger asChild disabled={isPending} className={type === 'transaction' ? "max-lg:w-full max-lg:h-full" : ""}>
-                {
-                    type === 'transaction'?
-                        isPending ? <Loader2 className="size-4 animate-spin max-lg:hidden" /> : <Trash className="text-red-500 size-4 max-lg:hidden" />
-                        :
-                        isPending? <Button variant='destructive' size='lg'>deleting <Loader2 className="size-4 animation-spin"/></Button> : <Button variant='destructive' size='lg'>delete</Button>
+                {isPending?
+                    <Button size='lg' disabled={isPending}>
+                        deleting
+                        <Loader2 className="size-4 animate-spin" />
+                    </Button>
+                    :
+                    <Button size='lg' variant='destructive'>delete</Button>
                 }
             </AlertDialogTrigger>
             <AlertDialogContent>

@@ -40,11 +40,12 @@ export function BudgetCard({budget,totalExpenses,categories}: {budget: BudgetTyp
                             {isEditing? (
                                 <NativeSelect onChange={(e) => setData({...data,category_id: Number(e.target.value)})}>
                                     <NativeSelectOption value={budget.category.id}>{budget.category.name}</NativeSelectOption>
-                                    {categories.map((category: CategoryType) => (
-                                        <NativeSelectOption key={category.id} value={category.id}>
+                                    {categories.map((category: CategoryType) => {
+                                        if(category.id === budget.category.id) return null;
+                                        return <NativeSelectOption key={category.id} value={category.id}>
                                             {category.name}
                                         </NativeSelectOption>
-                                    ))}
+                                    })}
                                 </NativeSelect>
                             ) : (
                                 <CardTitle className="sm:text-lg lg:text-2xl text-sm">{budget.category.name}</CardTitle>

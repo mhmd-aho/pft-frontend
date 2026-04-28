@@ -45,14 +45,14 @@ export function SignInForm() {
         })
     }
     return(
-        <Card className="sm:w-1/2 w-full sm:h-fit h-full">
+        <Card className="sm:w-1/2 w-full sm:h-fit h-full max-sm:rounded-none">
                 <CardHeader>
                     <CardTitle className="text-3xl">Sign In</CardTitle>
                     <CardDescription>
                         Enter your credentials to sign in to your account.
                     </CardDescription>
                 </CardHeader>
-                <CardContent className="flex flex-col gap-4">
+                <CardContent>
                     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-2">
                         <div className="flex flex-col gap-1">
                             <Label htmlFor="username" className="text-xl">Username</Label>

@@ -1,11 +1,16 @@
 'use server'
 import {z} from "zod";
 import { updateTag } from "next/cache";
-import {transactionSchema} from "@/lib/schemas";
-import { serverFetch, ApiError } from "@/lib/server-fetch";
-import { signinSchema, registerSchema, budgetSchema, CategoryType } from "@/lib/schemas";
+import {serverFetch, ApiError } from "@/lib/server-fetch";
+import { signinSchema, registerSchema, budgetSchema,transactionSchema} from "@/lib/schemas";
+
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+type TransactionSchemaType = {
+    amount: number;
+    type: string;
+    category_id: number;
+    profile_id: string;
+}
 type actionResult<T = undefined>= {success: true , data: T} | {success: false , error: string}
 function extractApiError(error: unknown): string {
     if (error instanceof ApiError) return error.message;
@@ -94,6 +99,22 @@ export async function postTransaction(data:z.infer<typeof transactionSchema>, pr
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({...data, profile_id})
+        });
+
+        updateTag('transactions');
+        return { success: true, data: await res.json() };
+    }catch(error){
+        return {success: false, error: extractApiError(error)}
+    }
+}
+export async function patchTransaction(data:TransactionSchemaType, transaction_id: number): Promise<actionResult> {
+    try{
+        const res = await serverFetch(`/api/transactions/${transaction_id}`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
         });
 
         updateTag('transactions');

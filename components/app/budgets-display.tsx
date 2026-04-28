@@ -2,6 +2,9 @@ import { TransactionType,CategoryType,BudgetType } from "@/lib/schemas";
 import AddBudget from "./add-budget";
 import { serverFetch } from "@/lib/server-fetch";
 import { BudgetCard } from "./budget-card";
+import { PopoverTrigger } from "../ui/popover";
+import Link from "next/link";
+import { Plus } from "lucide-react";
 
 export default async function BudgetsDisplay({Expenses,categories}: {Expenses: TransactionType[],categories: CategoryType[]}) {
     const res = await serverFetch(`/api/budgets/`,{next:{tags:['budgets']}});
@@ -19,7 +22,10 @@ export default async function BudgetsDisplay({Expenses,categories}: {Expenses: T
                             )
                         })
                     }
-                    <AddBudget categories={categories}/>
+                    <Link href="/dashboard/budget/add" className="sm:min-h-48 lg:h-72 h-32 flex flex-col items-center justify-center border-muted shadow border  rounded-md cursor-pointer">
+                                <Plus className="sm:size-20 size-10"/>
+                                <p className="sm:text-lg text-sm">Add Budget</p>
+                    </Link>
             </div>
         </div>
     );

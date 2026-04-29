@@ -39,7 +39,7 @@ export default function AddBudget({categories}: {categories: CategoryType[]}) {
         })
     }
     return (
-        <Card className="sm:w-1/2 w-full sm:h-fit h-full">
+        <Card className="sm:w-1/2 w-full sm:h-fit h-full max-sm:rounded-none">
             <CardHeader>
                 <CardTitle className="text-3xl">Add Budget</CardTitle>
             </CardHeader>

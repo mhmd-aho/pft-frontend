@@ -1,15 +1,13 @@
 import { TransactionType,CategoryType,BudgetType } from "@/lib/schemas";
-import AddBudget from "./add-budget";
 import { serverFetch } from "@/lib/server-fetch";
 import { BudgetCard } from "./budget-card";
-import { PopoverTrigger } from "../ui/popover";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 
 export default async function BudgetsDisplay({Expenses,categories}: {Expenses: TransactionType[],categories: CategoryType[]}) {
     const res = await serverFetch(`/api/budgets/`,{next:{tags:['budgets']}});
     const budgetsData = await res.json();
-    const budgets: BudgetType[] = budgetsData.results;
+    const budgets: BudgetType[] = budgetsData;
     return (
         <div className="col-span-6 row-start-2 row-end-6 flex flex-col gap-1">
             <h3 className="sm:text-lg text-sm">Categories breakdown</h3>

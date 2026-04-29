@@ -1,6 +1,5 @@
 import { Button } from "../ui/button";
 import { Plus } from "lucide-react";
-import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -21,6 +20,7 @@ export default function AddCategory() {
                 toast.error(res.error)
             }else{
                 toast.success('Category added successfully')
+                setName('')
             }
 
         })
@@ -28,7 +28,7 @@ export default function AddCategory() {
     return (
         <Dialog>
             <DialogTrigger disabled={isPending} asChild>
-                {isPending ? <Skeleton className="w-full h-10" /> : <Button variant="outline" size="sm" className="w-full"><Plus className="size-4"/> Add Category</Button>}
+                {isPending ? <Skeleton className="w-full h-10" /> : <Button variant="outline" size="lg" className="w-full h-10">Add Category <Plus className="size-4"/></Button>}
             </DialogTrigger>
             <DialogContent className="h-fit w-80">
                 <DialogHeader>

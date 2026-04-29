@@ -13,12 +13,12 @@ export default async function Budget() {
     next: { tags: ['transactions'] } 
   });
   const transactionsData = await res.json();
-  const transactions:TransactionType[] = transactionsData.results;
+  const transactions:TransactionType[] = transactionsData;
   const categoriesRes = await serverFetch(`/api/categories/`,{
         next: { tags: ['categories'] } 
     });
   const categoriesResJson = await categoriesRes.json();
-  const categories = categoriesResJson.results;
+  const categories = categoriesResJson;
   const Expenses = transactions.filter((t: TransactionType) => t.type === "expense")
   const Incomes = transactions.filter((t: TransactionType) => t.type === "income");
   const totalExpenses = Expenses.reduce((acc: number, t: TransactionType) => acc + Number(t.amount), 0);

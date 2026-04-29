@@ -15,7 +15,7 @@ export default async function AddTransaction() {
         next: { tags: ['categories'] } 
     });
     const categoriesResJson = await categoriesRes.json();
-    categories = categoriesResJson.results;
+    categories = categoriesResJson;
     }
     catch(e: any){
         error = e.message || 'Something went wrong'

@@ -2,11 +2,11 @@ import { Card, CardHeader, CardTitle } from "../ui/card";
 import { getUser } from "@/lib/user";
 import FormattedTotal from "./formatted-total";
 export default async function Balance() {
-    const profileData = await getUser();
-    if(typeof profileData === 'string'){
+    const profile = await getUser();
+    if(typeof profile === 'string'){
         return null;
     }
-    const balance = profileData.balance;
+    const balance = profile.balance;
     return (
         <Card className="col-start-1 col-span-2 row-start-1 row-end-2 max-sm:gap-1 max-sm:py-1">
                     <CardHeader>

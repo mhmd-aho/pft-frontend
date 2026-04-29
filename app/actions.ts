@@ -109,7 +109,7 @@ export async function postTransaction(data:z.infer<typeof transactionSchema>, pr
 }
 export async function patchTransaction(data:TransactionSchemaType, transaction_id: number): Promise<actionResult> {
     try{
-        const res = await serverFetch(`/api/transactions/${transaction_id}`, {
+        const res = await serverFetch(`/api/transactions/${transaction_id}/`, {
             method: "PATCH",
             headers: {
                 "Content-Type": "application/json"
@@ -125,7 +125,7 @@ export async function patchTransaction(data:TransactionSchemaType, transaction_i
 }
 export async function deleteTransaction(transaction_id: number): Promise<actionResult> {
     try{
-        await serverFetch(`/api/transactions/${transaction_id}`, {
+        await serverFetch(`/api/transactions/${transaction_id}/`, {
             method: "DELETE",
         });
 

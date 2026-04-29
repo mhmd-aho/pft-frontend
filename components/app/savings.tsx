@@ -17,10 +17,10 @@ export default async function Savings() {
     next: { tags: ['transactions'] } 
   });
   const transactionsData = await transactionRes.json();
-  const transactions:TransactionType[] = transactionsData.results;
+  const transactions:TransactionType[] = transactionsData;
   const budgetRes = await serverFetch(`/api/budgets/`,{next:{tags:['budgets']}});
   const budgetsData = await budgetRes.json();
-  const budgets:BudgetType[] = budgetsData.results;
+  const budgets:BudgetType[] = budgetsData;
   const expenses = transactions.filter((t: TransactionType) => t.type === "expense")
   const incomes = transactions.filter((t: TransactionType) => t.type === "income")
   return (

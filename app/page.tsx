@@ -1,16 +1,15 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { getUser } from "@/lib/user";
 export const metadata: Metadata = {
   title: "FinFlow | Welcome",
   description: "Welcome to FinFlow where u can track your finances",
 };
 export default async function Home() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token");
-  if(token){
+  const profile = await getUser();
+  if(typeof profile !== 'string'){
     redirect("/dashboard");
   }
   return (

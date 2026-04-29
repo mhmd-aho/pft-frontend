@@ -77,10 +77,10 @@ export default function AddTransactions({categories,porfile_id}: {categories: {i
                                 <NativeSelectOption key={category.id} value={category.id}>{category.name}</NativeSelectOption>
                             ))}
                         </NativeSelect>
-                        <AddCategory />
                         {errors.category_id && <p className="text-destructive">{errors.category_id.message}</p>}
                     </div>
-                    <Button type="submit" className='h-10' disabled={isPending}>{isPending ? <><Loader2 className="size-4 animate-spin" /> Adding Transaction</>:<><Plus className="size-4" /> Add Transaction</>}</Button>
+                    <AddCategory />
+                    <Button type="submit" className='h-10' disabled={isPending}>{isPending ? <>Adding Transaction <Loader2 className="size-4 animate-spin" /></>:<>Add Transaction <Plus className="size-4" /> </>}</Button>
                 </form>
             </CardContent>
         </Card>

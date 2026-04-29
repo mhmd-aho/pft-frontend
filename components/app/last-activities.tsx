@@ -18,7 +18,7 @@ try{
      next: { tags: ['transactions'] } 
     })
     const resJson = await res.json();
-    transactions = resJson.results;
+    transactions = resJson;
 }
 catch(e: any){
     error = e.message || 'Something went wrong'
@@ -34,7 +34,7 @@ return (
                         <TransactionsDisplay transactions={transactions} error={error} />
                     </CardContent>
                     <CardFooter className="flex justify-end shrink-0">
-                        <Button asChild>
+                        <Button className="max-sm:w-full" asChild>
                             <Link href="/dashboard/transaction/add">
                                 <Plus className="size-4"/>
                                 Add Transaction

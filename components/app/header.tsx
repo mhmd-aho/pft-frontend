@@ -4,10 +4,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Suspense } from "react";
 import Link from "next/link";
 import { getUser } from "@/lib/user";
-import type { ProfileType } from "@/lib/schemas";
 export default async function Header() {
-    const profileData:ProfileType | null = await getUser();
-
+    const profileData = await getUser();
+    if(typeof profileData === 'string'){
+        return null;
+    }
     return (
         <header className="w-full h-12 px-4 flex items-center justify-between">
             <Link href="/dashboard">

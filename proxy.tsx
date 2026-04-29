@@ -23,5 +23,7 @@ export const config = {
     matcher:[
         "/dashboard",
         "/dashboard/budget",
+        "/dashboard/budget/add",
+        "/dashboard/transaction/add",
     ]
 }

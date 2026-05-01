@@ -24,7 +24,7 @@ export default function DeleteAlert({id,type}: {id: number,type: 'transaction' |
     }
     return (
         <AlertDialog>
-            <AlertDialogTrigger asChild disabled={isPending} className={type === 'transaction' ? "max-lg:w-full max-lg:h-full" : ""}>
+            <AlertDialogTrigger asChild disabled={isPending}>
                 {isPending?
                     <Button size='lg' disabled={isPending}>
                         deleting

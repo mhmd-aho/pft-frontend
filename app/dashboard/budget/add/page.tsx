@@ -7,7 +7,7 @@ export default async function AddBudgetPage() {
       const categoriesResJson = await categoriesRes.json();
       const categories = categoriesResJson;
     return (
-        <div className="w-full h-[calc(100vh-4rem)] flex items-center justify-center">
+        <div className="w-full h-[calc(100vh-3rem)] flex items-center justify-center">
             <AddBudget categories={categories}/>
         </div>
     );

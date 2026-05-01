@@ -17,7 +17,7 @@ export default async function Transaction({params}: {params: {id: number}}) {
     const categoriesJson = await categoriesResponse.json();
     const categories:CategoryType[] = categoriesJson;
     return (
-        <div className="w-full h-[calc(100vh-4rem)] flex justify-center items-center">
+        <div className="w-full h-[calc(100vh-3rem)] flex justify-center items-center">
             <TransactionDetail transaction={transaction} categories={categories} profileId={profileId}/>
         </div>
     );

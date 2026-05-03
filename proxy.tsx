@@ -25,5 +25,6 @@ export const config = {
         "/dashboard/budget",
         "/dashboard/budget/add",
         "/dashboard/transaction/add",
+        "/dashboard/transaction/edit/:path*",
     ]
 }

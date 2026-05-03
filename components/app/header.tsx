@@ -3,7 +3,7 @@ import User from "./user";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Suspense } from "react";
 import Link from "next/link";
-import { getUser } from "@/lib/user";
+import { getUser } from "@/lib/caches";
 export default async function Header() {
     const profileData = await getUser();
     if(typeof profileData === 'string'){

@@ -70,10 +70,10 @@ export function ChartDisplay({ expenses,incomes,budgets}: ChartDisplayProps) {
           {
             budgetsToShow.length >0 &&
             budgetsToShow.map((budget)=>{
-               const budgetExpenses = expenses.filter(t=>t.category.name=== budget.category.name).reduce(((acc:number,t:TransactionType)=>acc+t.amount),0)
+               const budgetExpenses = expenses.filter(t=>t.category.name=== budget.category.name).reduce(((acc:number,t:TransactionType)=>acc+Number(t.amount)),0)
                const formatetExpenses = format.format(budgetExpenses)
-               const formatetBudgetAmount = format.format(budget.amount)
-               const progress = (budgetExpenses/budget.amount)*100;
+               const formatetBudgetAmount = format.format(Number(budget.amount))
+               const progress = (budgetExpenses/Number(budget.amount))*100;
                return(
                   <Field key={budget.id}>
                     <FieldLabel>

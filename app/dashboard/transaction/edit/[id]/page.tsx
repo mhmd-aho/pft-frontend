@@ -1,7 +1,7 @@
 import TransactionDetail from "@/components/app/transaction-detail";
 import { TransactionType,CategoryType } from "@/lib/schemas";
 import { serverFetch } from "@/lib/server-fetch";
-import { getUser } from "@/lib/user";
+import { getUser } from "@/lib/caches";
 import { redirect } from "next/navigation";
 
 export default async function Transaction({params}: {params: {id: number}}) {

@@ -1,6 +1,6 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../ui/card";
 import { TransactionType } from "@/lib/schemas";
-import { getUser } from "@/lib/user";
+import { getUser } from "@/lib/caches";
 import { serverFetch } from "@/lib/server-fetch";
 import TransactionsDisplay from "./transactions-display";
 import { Plus } from "lucide-react";

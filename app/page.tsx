@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { getUser } from "@/lib/user";
+import { getUser } from "@/lib/caches";
 export const metadata: Metadata = {
   title: "FinFlow | Welcome",
   description: "Welcome to FinFlow where u can track your finances",

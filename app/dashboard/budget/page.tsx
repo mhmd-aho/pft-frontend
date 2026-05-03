@@ -1,24 +1,24 @@
 import BudgetHeader from "@/components/app/budget-header";
 import BudgetsDisplay from "@/components/app/budgets-display";
-import { getUser } from "@/lib/user";
-import { serverFetch } from "@/lib/server-fetch";
+import { getUser, getMonthlyTransactions } from "@/lib/caches";
 import { TransactionType } from "@/lib/schemas";
+import { serverFetch } from "@/lib/server-fetch";
 export default async function Budget() {
       const profileData = await getUser();
   if (typeof profileData === 'string')  {
     return null;
   }
-
-  const res = await serverFetch(`/api/transactions/profile/${profileData.id}/monthly/`, {
-    next: { tags: ['transactions'] } 
-  });
-  const transactionsData = await res.json();
-  const transactions:TransactionType[] = transactionsData;
-  const categoriesRes = await serverFetch(`/api/categories/`,{
+  const [transactions,categoriesRes] = await Promise.all([
+    getMonthlyTransactions(profileData.id),
+    serverFetch(`/api/categories/`,{
         next: { tags: ['categories'] } 
-    });
-  const categoriesResJson = await categoriesRes.json();
-  const categories = categoriesResJson;
+    })
+
+  ])
+  if(typeof transactions === 'string'){
+    return null;
+  }
+  const categories = await categoriesRes.json();
   const Expenses = transactions.filter((t: TransactionType) => t.type === "expense")
   const Incomes = transactions.filter((t: TransactionType) => t.type === "income");
   const totalExpenses = Expenses.reduce((acc: number, t: TransactionType) => acc + Number(t.amount), 0);

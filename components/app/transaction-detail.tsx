@@ -9,7 +9,6 @@ import { toast } from "sonner";
 import { Input } from "../ui/input";
 import { NativeSelect, NativeSelectOption } from "../ui/native-select";
 import { CategoryType } from "@/lib/schemas";
-import {z} from 'zod'
 type TransactionSchemaType = {
     amount: number;
     type: string;
@@ -19,7 +18,6 @@ type TransactionSchemaType = {
 export default function TransactionDetail({transaction,categories,profileId}:{transaction:TransactionType,categories:CategoryType[],profileId:string}) {
     const [isEditing, setIsEditing] = useState(false);
     const [data,setData] = useState<TransactionSchemaType>({amount:transaction.amount,type:transaction.type,category_id:transaction.category.id,profile_id:profileId});
-    console.log(data.profile_id);
     const handleEdit = async () => {
         if(data.amount === transaction.amount && data.type === transaction.type && data.category_id === transaction.category.id){
             setIsEditing(false);

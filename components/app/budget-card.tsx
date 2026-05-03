@@ -35,7 +35,7 @@ export function BudgetCard({budget,totalExpenses,categories}: {budget: BudgetTyp
             }
     }
     return (
-        <Card key={budget.id} className='sm:h-48 lg:h-72 w-full h-32 max-sm:gap-2'>
+        <Card key={budget.id} className='sm:h-48 lg:h-72 w-full h-36 max-sm:gap-2'>
                         <CardHeader>
                             {isEditing? (
                                 <NativeSelect onChange={(e) => setData({...data,category_id: Number(e.target.value)})}>
@@ -54,7 +54,7 @@ export function BudgetCard({budget,totalExpenses,categories}: {budget: BudgetTyp
                         <CardContent>
                             <Field className="max-sm:gap-0">
                                 <FieldLabel className="sm:text-lg lg:text-xl text-sm">
-                                    <p>{formattedTotalExpenses} / {isEditing? <Input type='number' step='0.01' placeholder='0.00' value={data.amount} onChange={(e) => setData({...data,amount: Number(e.target.value)})} className="w-32" /> : formattedBudgetAmount}</p>
+                                    <p>{formattedTotalExpenses} / {isEditing? <Input type='number' step='0.01' placeholder='0.00' value={data.amount} onChange={(e) => setData({...data,amount: Number(e.target.value)})} className="w-32 mb-1" /> : formattedBudgetAmount}</p>
                                 </FieldLabel>
                                 <Progress  value={progress} />
                             </Field>

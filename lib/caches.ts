@@ -1,5 +1,7 @@
 import {cookies} from "next/headers";
 import { cache } from "react";
+import { TransactionType } from "./schemas";
+import { serverFetch } from "./server-fetch";
 export const getUser = cache(async () => {
     const cookieStore = await cookies();
     const token = cookieStore.get("token")?.value;
@@ -25,4 +27,16 @@ export const getUser = cache(async () => {
     }
     const profileData = await profile.json();
     return profileData;
+})
+export const getMonthlyTransactions = cache(async (profileId: number)=>{
+    try{
+        const res = await serverFetch(`/api/transactions/profile/${profileId}/monthly/`,{
+            next: { tags: ['transactions'] } 
+        });
+        const transactionsData = await res.json();
+        const transactions:TransactionType[] = transactionsData;
+        return transactions;
+    }catch(e: any){
+        return e.message || 'Error while fetching transactions'
+    }
 })

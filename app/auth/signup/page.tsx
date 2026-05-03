@@ -6,7 +6,7 @@ export const metadata: Metadata = {
 };
 export default function SignUp() {
     return (
-        <section className="w-screen h-screen flex items-center justify-center">
+        <section className="w-screen h-[calc(100vh-3rem)] flex items-center justify-center">
             <SignUpForm />
         </section>
     );

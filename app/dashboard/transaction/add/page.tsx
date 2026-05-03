@@ -1,7 +1,7 @@
 import AddTransactions from "@/components/app/add-transactions";
 import { serverFetch } from "@/lib/server-fetch";
 import { CategoryType } from "@/lib/schemas";
-import { getUser } from "@/lib/user";
+import { getUser } from "@/lib/caches";
 
 export default async function AddTransaction() {
     let categories: CategoryType[] = [];

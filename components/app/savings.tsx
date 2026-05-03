@@ -1,5 +1,5 @@
 import { Card,CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { getUser } from "@/lib/user";
+import { getUser,getMonthlyTransactions } from "@/lib/caches";
 import {SquareArrowOutUpRight} from "lucide-react";
 import { ChartDisplay } from "./chart-display"
 import { TransactionType,BudgetType } from "@/lib/schemas";
@@ -12,12 +12,10 @@ export default async function Savings() {
   if (typeof profileData === 'string')  {
     return null;
   }
-
-  const transactionRes = await serverFetch(`/api/transactions/profile/${profileData.id}/monthly/`, {
-    next: { tags: ['transactions'] } 
-  });
-  const transactionsData = await transactionRes.json();
-  const transactions:TransactionType[] = transactionsData;
+  const transactions = await getMonthlyTransactions(profileData.id);
+  if(typeof transactions === 'string'){
+    return null;
+  }
   const budgetRes = await serverFetch(`/api/budgets/`,{next:{tags:['budgets']}});
   const budgetsData = await budgetRes.json();
   const budgets:BudgetType[] = budgetsData;

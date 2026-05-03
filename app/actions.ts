@@ -13,21 +13,27 @@ type TransactionSchemaType = {
 }
 type actionResult<T = undefined>= {success: true , data: T} | {success: false , error: string}
 function extractApiError(error: unknown): string {
-    if (error instanceof ApiError) return error.message;
+    if (error instanceof ApiError) {
+        const data = error.data;
+        if (data?.detail) return data.detail;
+        if (Array.isArray(data?.non_field_errors)) return data.non_field_errors[0];
+        if (typeof data === 'object' && data !== null) {
+            const errorEntries = Object.entries(data);
+            if (errorEntries.length > 0) {
+                const [field, messages] = errorEntries[0];
+                const displayField = field !== 'non_field_errors' ? `${field}: ` : '';
+                
+                if (Array.isArray(messages)) return `${displayField}${messages[0]}`;
+                if (typeof messages === 'string') return `${displayField}${messages}`;
+            }
+        }
+        return error.message || 'An API error occurred';
+    }
+
     if (error instanceof Error) return error.message;
     if (typeof error === 'string') return error;
-    
-    // Fallback for cases where ApiError wasn't used directly
-    if (typeof error === 'object' && error !== null) {
-        const anyError = error as any;
-        if (anyError.detail) return anyError.detail;
-        if (anyError.non_field_errors?.[0] && Array.isArray(anyError.non_field_errors)) return anyError.non_field_errors[0];
-        const firstKey = Object.keys(anyError)[0];
-        const firstError = anyError[firstKey];
-        if (Array.isArray(firstError)) return firstError[0];
-        if (typeof firstError === 'string') return firstError;
-    }
-    return 'Something went wrong';
+
+    return 'An unexpected error occurred';
 }
 export async function signinAction(data:z.infer<typeof signinSchema>): Promise<actionResult>{
     try{

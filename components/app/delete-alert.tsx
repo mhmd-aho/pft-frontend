@@ -1,3 +1,4 @@
+"use client";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../ui/alert-dialog";
 import { useTransition } from "react";
 import { deleteTransaction, deleteBudget } from "@/app/actions";
@@ -9,7 +10,6 @@ export default function DeleteAlert({id,type}: {id: number,type: 'transaction' |
     const [isPending,startTransition] = useTransition();
     const router = useRouter();
     const handleDelete = () => {
-
         startTransition(async () => {
             const res = type === 'transaction'? await deleteTransaction(id) : await deleteBudget(id);
             if(res && !res.success){

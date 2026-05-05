@@ -22,8 +22,8 @@ export default async function proxy(request:NextRequest){
 export const config = {
     matcher:[
         "/dashboard",
-        "/dashboard/budget",
-        "/dashboard/budget/add",
+        "/dashboard/budgets",
+        "/dashboard/budgets/add",
         "/dashboard/transaction/add",
         "/dashboard/transaction/edit/:path*",
     ]

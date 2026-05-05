@@ -31,7 +31,7 @@ export default function AddBudget({categories}: {categories: CategoryType[]}) {
             const res = await postBudget(data);
             if(res.success){
                 toast.success('Budget added successfully');
-                router.push('/dashboard/budget');
+                router.push('/dashboard/budgets');
             }
             else{
                 toast.error(res.error)

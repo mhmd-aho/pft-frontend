@@ -37,9 +37,9 @@ export default async function Savings() {
       />
       <CardFooter className="flex justify-end shrink-0">
         <Button  className="max-sm:w-full" asChild>
-          <Link href="/dashboard/budget" className="flex items-center gap-1">
+          <Link href="/dashboard/budgets" className="flex items-center gap-1">
             <SquareArrowOutUpRight className="size-4" />
-            View all categories
+            View all budgets
           </Link>
         </Button>
       </CardFooter>
